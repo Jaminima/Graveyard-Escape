@@ -21,7 +21,7 @@ namespace Graveyard_Escape_Lib.Types
             float[] entityVertexData = Entity<EntityRenderer>.LoadVertexData("entity");
 
             // Add some entities
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 1000; i++)
             {
                 float x = (float)random.NextDouble() * 2.0f - 1.0f;
                 float y = (float)random.NextDouble() * 2.0f - 1.0f;
@@ -32,7 +32,7 @@ namespace Graveyard_Escape_Lib.Types
                 float g = random.Next(0, 255) / 255.0f;
                 float b = random.Next(0, 255) / 255.0f;
 
-                Entities.Add(new Entity<EntityRenderer>(entityVertexData) { Position = new System.Numerics.Vector2(x, y), Scale=0.05f, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
+                Entities.Add(new Entity<EntityRenderer>(entityVertexData) { Position = new System.Numerics.Vector2(x, y), Scale=0.01f, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
             }
         }
 
@@ -54,7 +54,7 @@ namespace Graveyard_Escape_Lib.Types
                     var otherEntity = Entities[j];
                     if (entity != otherEntity)
                     {
-                        if (entity.CollidesWith(otherEntity, out Vector2 collisionPoint))
+                        if (entity.IsNear(otherEntity, 1) && entity.CollidesWith(otherEntity, out Vector2 collisionPoint))
                         {
                             entity.Velocity = -entity.Velocity;
                             entity.Position += entity.Velocity * dtime * 10;

@@ -70,6 +70,11 @@ namespace Graveyard_Escape_Lib.Types
             _Renderer.UnloadGL();
         }
 
+        public bool IsNear(Entity<T> other, float distance)
+        {
+            return Vector2.Distance(Position, other.Position) / Scale < distance;
+        }
+
         public bool CollidesWith(Entity<T> other, out Vector2 collisionPoint)
         {
             Matrix3x2 transform = Matrix3x2.CreateScale(Scale) * Matrix3x2.CreateRotation(Rotation) * Matrix3x2.CreateTranslation(Position);
