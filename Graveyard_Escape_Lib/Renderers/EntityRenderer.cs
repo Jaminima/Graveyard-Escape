@@ -22,10 +22,15 @@ namespace Graveyard_Escape_Game.Renderers
             layout(location = 0) in vec4 position;
             uniform vec2 entityPosition;
             uniform float entityScale;
+            uniform float entityRotation;
 
             void main(void)
             {
-                gl_Position = position * entityScale + vec4(entityPosition, 1.0, 1.0);
+                float cosTheta = cos(entityRotation);
+                float sinTheta = sin(entityRotation);
+                mat2 rotationMatrix = mat2(cosTheta, -sinTheta, sinTheta, cosTheta);
+                vec2 rotatedPosition = rotationMatrix * position.xy;
+                gl_Position = vec4(rotatedPosition * entityScale + entityPosition, position.zw);
             }
         ";
 
@@ -96,6 +101,10 @@ namespace Graveyard_Escape_Game.Renderers
 
             int entityScaleLocation = GL.GetUniformLocation(_shaderProgram, "entityScale");
             GL.Uniform1(entityScaleLocation, entity.Scale);
+
+            // Set the entity rotation uniform
+            int entityRotationLocation = GL.GetUniformLocation(_shaderProgram, "entityRotation");
+            GL.Uniform1(entityRotationLocation, entity.Rotation);
 
             // Set the entity colour uniform
             int entityColourLocation = GL.GetUniformLocation(_shaderProgram, "entityColour");
