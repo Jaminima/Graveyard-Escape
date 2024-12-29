@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
-using Graveyard_Escape_Game.Renderers;
 
 namespace Graveyard_Escape_Lib.Types
 {
-    public class Entity
+    public class Entity<T> where T : Renderer, new()
     {
-        private readonly EntityRenderer _Renderer;
+        private readonly Renderer _Renderer;
         public Vector2 Position { get; set; }
         public Vector2 Velocity { get; set; }
         public float Scale { get; set; } = 1.0f;
@@ -18,7 +17,7 @@ namespace Graveyard_Escape_Lib.Types
 
         public Entity()
         {
-            _Renderer = new EntityRenderer();
+            _Renderer = new T();
         }
 
         public void Init(){

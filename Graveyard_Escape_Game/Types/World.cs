@@ -3,17 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Graveyard_Escape_Game.Renderers;
+
 namespace Graveyard_Escape_Lib.Types
 {
     public class World
     {
-        public List<Entity> Entities { get; set; }
+        public List<Entity<EntityRenderer>> Entities { get; set; }
 
         public World()
         {
             Random random = new Random();
 
-            Entities = new List<Entity>();
+            Entities = new List<Entity<EntityRenderer>>();
 
             // Add some entities
             for (int i = 0; i < 10; i++)
@@ -27,7 +29,7 @@ namespace Graveyard_Escape_Lib.Types
                 float g = random.Next(0, 255) / 255.0f;
                 float b = random.Next(0, 255) / 255.0f;
 
-                Entities.Add(new Entity() { Position = new System.Numerics.Vector2(x, y), Scale=0.1f, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
+                Entities.Add(new Entity<EntityRenderer>() { Position = new System.Numerics.Vector2(x, y), Scale=0.1f, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
             }
         }
 

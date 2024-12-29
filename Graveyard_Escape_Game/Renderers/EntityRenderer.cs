@@ -7,7 +7,7 @@ using OpenTK.Graphics.OpenGL;
 
 namespace Graveyard_Escape_Game.Renderers
 {
-    public class EntityRenderer
+    public class EntityRenderer: Renderer
     {
         private int _vertexShader;
         private int _fragmentShader;
@@ -88,7 +88,7 @@ namespace Graveyard_Escape_Game.Renderers
             GL.EnableVertexAttribArray(positionLocation);
         }
 
-        public void RenderGL(Entity entity)
+        public void RenderGL(Entity<EntityRenderer> entity)
         {
             // Bind and use shader program
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
