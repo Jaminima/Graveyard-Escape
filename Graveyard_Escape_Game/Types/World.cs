@@ -83,6 +83,11 @@ namespace Graveyard_Escape_Lib.Types
                                 otherEntity.Velocity -= impulse / otherEntity.Mass;
                             }
 
+                            // Calculate the effect of SpinSpeed
+                            float spinEffect = (entity.SpinSpeed - otherEntity.SpinSpeed) * 0.1f;
+                            entity.Velocity += new Vector2(-normal.Y, normal.X) * spinEffect;
+                            otherEntity.Velocity -= new Vector2(-normal.Y, normal.X) * spinEffect;
+
                             entity.LastCollisionId = otherEntity.Id;
                             otherEntity.LastCollisionId = entity.Id;
                         }
