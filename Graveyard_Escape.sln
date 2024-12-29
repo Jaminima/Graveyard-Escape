@@ -5,6 +5,8 @@ VisualStudioVersion = 17.12.35527.113 d17.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Graveyard_Escape_Game", "Graveyard_Escape_Game\Graveyard_Escape_Game.csproj", "{0EF1837D-49F2-48E5-819C-67C39B2ECCE1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Graveyard_Escape_Lib", "Graveyard_Escape_Lib\Graveyard_Escape_Lib.csproj", "{18A3E2F5-390C-4989-9678-EA1F10713845}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{0EF1837D-49F2-48E5-819C-67C39B2ECCE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0EF1837D-49F2-48E5-819C-67C39B2ECCE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0EF1837D-49F2-48E5-819C-67C39B2ECCE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18A3E2F5-390C-4989-9678-EA1F10713845}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18A3E2F5-390C-4989-9678-EA1F10713845}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18A3E2F5-390C-4989-9678-EA1F10713845}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18A3E2F5-390C-4989-9678-EA1F10713845}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

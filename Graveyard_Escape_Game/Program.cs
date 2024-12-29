@@ -4,7 +4,9 @@
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello, World!");
+            var window = new Window(800, 600, "Graveyard Escape Game");
+
+            window.Run();
         }
     }
 }
