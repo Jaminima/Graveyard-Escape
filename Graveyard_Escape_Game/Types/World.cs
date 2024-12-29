@@ -21,7 +21,7 @@ namespace Graveyard_Escape_Lib.Types
             float[] entityVertexData = Entity<EntityRenderer>.LoadVertexData("entity");
 
             // Add some entities
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 100; i++)
             {
                 float x = (float)random.NextDouble() * 2.0f - 1.0f;
                 float y = (float)random.NextDouble() * 2.0f - 1.0f;
@@ -29,8 +29,8 @@ namespace Graveyard_Escape_Lib.Types
                 float vy = (float)random.NextDouble() * 0.02f - 0.01f;
 
                 if (random.Next(0, 10) > 8){
-                    vx *= 10;
-                    vy *= 10;
+                    vx *= 100;
+                    vy *= 100;
                 }
 
                 float r = random.Next(0, 255) / 255.0f;
@@ -39,7 +39,7 @@ namespace Graveyard_Escape_Lib.Types
 
                 float SpinSpeed = (float)random.NextDouble() * 1.0f - 0.50f;
 
-                Entities.Add(new Entity<EntityRenderer>(entityVertexData) { Id = i, Position = new System.Numerics.Vector2(x, y), Scale=0.005f, SpinSpeed = SpinSpeed, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
+                Entities.Add(new Entity<EntityRenderer>(entityVertexData) { Id = i, Position = new System.Numerics.Vector2(x, y), Scale=0.01f, SpinSpeed = SpinSpeed, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
             }
         }
 
@@ -49,15 +49,24 @@ namespace Graveyard_Escape_Lib.Types
             for (int i = 0; i < Entities.Count; i++)
             {
                 var entity = Entities[i];
+                
+                if (entity.MarkedForDeletion)
+                {
+                    Entities.RemoveAt(i);
+                    i--;
+                    continue;
+                }
+
+                List<int> collidedWith = new List<int>();
+
                 for (int j = 0; j < Entities.Count; j++)
                 {
                     var otherEntity = Entities[j];
                     if (entity.Id != otherEntity.Id)
                     {
-
-                        if (entity.LastCollisionId != otherEntity.Id)
+                        if (!entity.LastCollidedWith.Contains(otherEntity.Id))
                         {
-                            if (entity.IsNear(otherEntity, 20, out float distance))
+                            if (entity.IsNear(otherEntity, 10, out float distance))
                             {
                                 Vector2 direction = otherEntity.Position - entity.Position;
                                 float distanceSquared = direction.LengthSquared();
@@ -72,12 +81,13 @@ namespace Graveyard_Escape_Lib.Types
                                     Vector2 relativeVelocity = entity.Velocity - otherEntity.Velocity;
 
                                     float relativeSpeed = Math.Abs(Vector2.Dot(relativeVelocity, normal));
-                                    if (relativeSpeed < 0.1f)
+                                    if (relativeSpeed < 0.01f)
                                     {
                                         entity.Velocity = new Vector2(relativeVelocity.X, relativeVelocity.Y);
                                         entity.Scale = (float)Math.Sqrt(entity.Scale * entity.Scale + otherEntity.Scale * otherEntity.Scale);
                                         entity.Mass = entity.Mass + otherEntity.Mass;
                                         entity.SpinSpeed = (entity.SpinSpeed + otherEntity.SpinSpeed) / 2;
+                                        entity.Colour = entity.Colour + otherEntity.Colour / 2;
 
                                         otherEntity.MarkedForDeletion = true;
                                         continue;
@@ -112,25 +122,19 @@ namespace Graveyard_Escape_Lib.Types
                                     entity.Velocity += new Vector2(-normal.Y, normal.X) * spinEffect;
                                     otherEntity.Velocity -= new Vector2(-normal.Y, normal.X) * spinEffect;
 
-                                    entity.LastCollisionId = otherEntity.Id;
-                                    otherEntity.LastCollisionId = entity.Id;
+                                    collidedWith.Add(otherEntity.Id);
                                 }
                             }
                         }
                     }
                 }
+
+                entity.LastCollidedWith = collidedWith;
             }
 
             for (int i = 0; i < Entities.Count; i++)
             {
                 var entity = Entities[i];
-
-                if (entity.MarkedForDeletion)
-                {
-                    Entities.RemoveAt(i);
-                    i--;
-                    continue;
-                }
 
                 entity.Position += entity.Velocity * dtime;
                 entity.Rotation += entity.SpinSpeed * dtime;

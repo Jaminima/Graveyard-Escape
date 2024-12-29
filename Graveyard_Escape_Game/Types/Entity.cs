@@ -9,7 +9,7 @@ namespace Graveyard_Escape_Lib.Types
     public class Entity<T> where T : Renderer, new()
     {
         public int Id { get; set; }
-        public int LastCollisionId { get; set; } = -1;
+        public List<int> LastCollidedWith { get; set; } = new List<int>();
 
         private readonly Renderer _Renderer;
         public Vector2 Position { get; set; }
