@@ -17,12 +17,12 @@ namespace Graveyard_Escape_Lib.Types
             };
         }
 
-        public void Update()
+        public void Update(float dtime)
         {
             foreach (var entity in Entities)
             {
                 //entity.Position += entity.Velocity;
-                entity.Rotation += 0.01f;
+                entity.Rotation += 0.1f * dtime;
             }
         }
     }

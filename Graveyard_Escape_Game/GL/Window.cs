@@ -107,7 +107,7 @@ namespace Graveyard_Escape_Game
         {
             base.OnUpdateFrame(e);
             // ...update logic...
-            _world.Update();
+            _world.Update((float)e.Time);
         }
 
         protected override void OnResize(ResizeEventArgs e)
