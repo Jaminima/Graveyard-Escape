@@ -28,6 +28,11 @@ namespace Graveyard_Escape_Lib.Types
                 float vx = (float)random.NextDouble() * 0.02f - 0.01f;
                 float vy = (float)random.NextDouble() * 0.02f - 0.01f;
 
+                if (random.Next(0, 10) > 8){
+                    vx *= 100;
+                    vy *= 100;
+                }
+
                 float r = random.Next(0, 255) / 255.0f;
                 float g = random.Next(0, 255) / 255.0f;
                 float b = random.Next(0, 255) / 255.0f;
