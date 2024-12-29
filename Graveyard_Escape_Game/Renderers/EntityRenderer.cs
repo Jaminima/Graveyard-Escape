@@ -19,19 +19,7 @@ namespace Graveyard_Escape_Game.Renderers
         private int _entityRotationLocation;
         private int _entityColourLocation;
 
-        // Quad vertices using two triangles
-        private readonly float[] _points = {
-            // First triangle
-            -0.5f, -0.5f, 0.0f, 1.0f,
-            0.5f, -0.5f, 0.0f, 1.0f,
-            0.5f, 0.5f, 0.0f, 1.0f,
-            // Second triangle
-            0.5f, 0.5f, 0.0f, 1.0f,
-            -0.5f, 0.5f, 0.0f, 1.0f,
-            -0.5f, -0.5f, 0.0f, 1.0f
-        };
-
-        public void InitGL()
+        public void InitGL<T>(Entity<T> entity) where T : Renderer, new()
         {
             // Compile shaders
             string vertexShaderCode = File.ReadAllText("GLSL/entity.vertex.glsl");
@@ -53,7 +41,7 @@ namespace Graveyard_Escape_Game.Renderers
             // Create VBO
             _vertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-            GL.BufferData(BufferTarget.ArrayBuffer, _points.Length * sizeof(float), _points, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, entity.VertexData.Length * sizeof(float), entity.VertexData, BufferUsageHint.StaticDraw);
 
             // Create VAO
             _vertexArrayObject = GL.GenVertexArray();
