@@ -34,19 +34,12 @@ namespace Graveyard_Escape_Lib.Types
 
                 float SpinSpeed = (float)random.NextDouble() * 1.0f - 0.50f;
 
-                Entities.Add(new Entity<EntityRenderer>(entityVertexData) { Position = new System.Numerics.Vector2(x, y), Scale=0.01f, SpinSpeed = SpinSpeed, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
+                Entities.Add(new Entity<EntityRenderer>(entityVertexData) { Id = i, Position = new System.Numerics.Vector2(x, y), Scale=0.01f, SpinSpeed = SpinSpeed, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
             }
         }
 
         public void Update(float dtime)
         {
-            for (int i = 0; i < Entities.Count; i++)
-            {
-                var entity = Entities[i];
-                entity.Position += entity.Velocity * dtime * 10;
-                entity.Rotation += entity.SpinSpeed * dtime;
-            }
-
             // Check for collisions
             for (int i = 0; i < Entities.Count; i++)
             {
@@ -54,18 +47,39 @@ namespace Graveyard_Escape_Lib.Types
                 for (int j = 0; j < Entities.Count; j++)
                 {
                     var otherEntity = Entities[j];
-                    if (entity != otherEntity)
+                    if (entity.Id != otherEntity.Id && entity.LastCollisionId != otherEntity.Id)
                     {
                         if (entity.IsNear(otherEntity, 1) && entity.CollidesWith(otherEntity, out Vector2 collisionPoint))
                         {
-                            entity.Velocity = -entity.Velocity;
-                            entity.Position += entity.Velocity * dtime * 10;
+                            // Calculate the bounce
+                            Vector2 normal = Vector2.Normalize(entity.Position - otherEntity.Position);
+                            Vector2 relativeVelocity = entity.Velocity - otherEntity.Velocity;
+                            float velocityAlongNormal = Vector2.Dot(relativeVelocity, normal);
 
-                            otherEntity.Velocity = -otherEntity.Velocity;
-                            otherEntity.Position += otherEntity.Velocity * dtime * 10;
+                            if (velocityAlongNormal > 0)
+                                continue;
+
+                            float restitution = 1.0f; // Perfectly elastic collision
+                            float impulseScalar = -(1 + restitution) * velocityAlongNormal;
+                            impulseScalar /= 1 / entity.Mass + 1 / otherEntity.Mass;
+
+                            Vector2 impulse = impulseScalar * normal;
+
+                            entity.Velocity -= impulse / entity.Mass;
+                            otherEntity.Velocity += impulse / otherEntity.Mass;
+
+                            entity.LastCollisionId = otherEntity.Id;
+                            otherEntity.LastCollisionId = entity.Id;
                         }
                     }
                 }
+            }
+
+            for (int i = 0; i < Entities.Count; i++)
+            {
+                var entity = Entities[i];
+                entity.Position += entity.Velocity * dtime;
+                entity.Rotation += entity.SpinSpeed;
             }
         }
     }
