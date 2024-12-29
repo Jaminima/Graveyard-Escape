@@ -15,7 +15,7 @@ namespace Graveyard_Escape_Game
         private readonly int _height;
         private readonly string _title;
         private readonly World _world;
-        
+
         // Triangle vertices
         private readonly float[] _points = {
             -0.5f, 0.0f, 0.0f, 1.0f,
@@ -28,6 +28,10 @@ namespace Graveyard_Escape_Game
         private int _shaderProgram;
         private int _vertexBufferObject;
         private int _vertexArrayObject;
+
+        //FPS counter
+        private double _time = 0;
+        private int _frames = 0;
 
         public Window(int width, int height, string title): base(new GameWindowSettings(), new NativeWindowSettings() { ClientSize = new Vector2i(width, height), Title = title,   })
         {
@@ -78,6 +82,15 @@ namespace Graveyard_Escape_Game
             _world.Entities.ForEach(entity => entity.Render());
 
             SwapBuffers();
+
+            _time += e.Time;
+            _frames++;
+            if (_time > 1.0)
+            {
+                Console.WriteLine($"FPS: {_frames / _time:0}");
+                _time = 0;
+                _frames = 0;
+            }
         }
 
         protected override void OnUpdateFrame(FrameEventArgs e)
