@@ -17,12 +17,15 @@ namespace Graveyard_Escape_Lib.Types
         public Entity()
         {
             _Renderer = new EntityRenderer(this);
-            _Renderer.Init();
+        }
+
+        public void Init(){
+            _Renderer.InitGL();
         }
 
         public void Render()
         {
-            _Renderer.Render();
+            _Renderer.RenderGL();
         }
     }
 }

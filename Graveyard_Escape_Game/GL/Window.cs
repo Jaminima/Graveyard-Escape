@@ -77,32 +77,8 @@ namespace Graveyard_Escape_Game
             GL.MatrixMode(MatrixMode.Modelview);
             GL.LoadIdentity();
 
-            // Compile shaders
-            _vertexShader = GL.CreateShader(ShaderType.VertexShader);
-            GL.ShaderSource(_vertexShader, VertexShaderSource);
-            GL.CompileShader(_vertexShader);
-
-            _fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
-            GL.ShaderSource(_fragmentShader, FragmentShaderSource);
-            GL.CompileShader(_fragmentShader);
-
-            // Create shader program
-            _shaderProgram = GL.CreateProgram();
-            GL.AttachShader(_shaderProgram, _vertexShader);
-            GL.AttachShader(_shaderProgram, _fragmentShader);
-            GL.LinkProgram(_shaderProgram);
-
-            // Create VBO
-            _vertexBufferObject = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-            GL.BufferData(BufferTarget.ArrayBuffer, _points.Length * sizeof(float), _points, BufferUsageHint.StaticDraw);
-
-            // Create VAO
-            _vertexArrayObject = GL.GenVertexArray();
-            GL.BindVertexArray(_vertexArrayObject);
-            var positionLocation = GL.GetAttribLocation(_shaderProgram, "position");
-            GL.VertexAttribPointer(positionLocation, 4, VertexAttribPointerType.Float, false, 0, 0);
-            GL.EnableVertexAttribArray(positionLocation);
+            // Initialize OpenGL for entities
+            _world.Entities.ForEach(entity => entity.Init());
         }
 
         protected override void OnUnload()
@@ -125,11 +101,8 @@ namespace Graveyard_Escape_Game
             base.OnRenderFrame(e);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            // Bind and use shader program
-            GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-            GL.BindVertexArray(_vertexArrayObject);
-            GL.UseProgram(_shaderProgram);
-            GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
+            // Render entities
+            _world.Entities.ForEach(entity => entity.Render());
 
             SwapBuffers();
         }
