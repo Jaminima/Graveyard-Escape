@@ -14,6 +14,10 @@ namespace Graveyard_Escape_Game.Renderers
         private int _shaderProgram;
         private int _vertexBufferObject;
         private int _vertexArrayObject;
+        private int _entityPositionLocation;
+        private int _entityScaleLocation;
+        private int _entityRotationLocation;
+        private int _entityColourLocation;
 
         // Shader sources
         private const string VertexShaderSource = @"
@@ -86,6 +90,12 @@ namespace Graveyard_Escape_Game.Renderers
             var positionLocation = GL.GetAttribLocation(_shaderProgram, "position");
             GL.VertexAttribPointer(positionLocation, 4, VertexAttribPointerType.Float, false, 0, 0);
             GL.EnableVertexAttribArray(positionLocation);
+
+            // Get uniform locations
+            _entityPositionLocation = GL.GetUniformLocation(_shaderProgram, "entityPosition");
+            _entityScaleLocation = GL.GetUniformLocation(_shaderProgram, "entityScale");
+            _entityRotationLocation = GL.GetUniformLocation(_shaderProgram, "entityRotation");
+            _entityColourLocation = GL.GetUniformLocation(_shaderProgram, "entityColour");
         }
 
         public void RenderGL<T>(Entity<T> entity) where T : Renderer, new()
@@ -96,19 +106,14 @@ namespace Graveyard_Escape_Game.Renderers
             GL.UseProgram(_shaderProgram);
 
             // Set the entity position and scale uniforms
-            int entityPositionLocation = GL.GetUniformLocation(_shaderProgram, "entityPosition");
-            GL.Uniform2(entityPositionLocation, entity.Position.X, entity.Position.Y);
-
-            int entityScaleLocation = GL.GetUniformLocation(_shaderProgram, "entityScale");
-            GL.Uniform1(entityScaleLocation, entity.Scale);
+            GL.Uniform2(_entityPositionLocation, entity.Position.X, entity.Position.Y);
+            GL.Uniform1(_entityScaleLocation, entity.Scale);
 
             // Set the entity rotation uniform
-            int entityRotationLocation = GL.GetUniformLocation(_shaderProgram, "entityRotation");
-            GL.Uniform1(entityRotationLocation, entity.Rotation);
+            GL.Uniform1(_entityRotationLocation, entity.Rotation);
 
             // Set the entity colour uniform
-            int entityColourLocation = GL.GetUniformLocation(_shaderProgram, "entityColour");
-            GL.Uniform4(entityColourLocation, entity.Colour.X, entity.Colour.Y, entity.Colour.Z, entity.Colour.W);
+            GL.Uniform4(_entityColourLocation, entity.Colour.X, entity.Colour.Y, entity.Colour.Z, entity.Colour.W);
 
             GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
         }

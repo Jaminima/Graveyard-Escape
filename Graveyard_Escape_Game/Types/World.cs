@@ -18,7 +18,7 @@ namespace Graveyard_Escape_Lib.Types
             Entities = new List<Entity<EntityRenderer>>();
 
             // Add some entities
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 1000; i++)
             {
                 float x = (float)random.NextDouble() * 2.0f - 1.0f;
                 float y = (float)random.NextDouble() * 2.0f - 1.0f;
