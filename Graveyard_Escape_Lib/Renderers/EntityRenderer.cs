@@ -21,21 +21,23 @@ namespace Graveyard_Escape_Game.Renderers
 
             layout(location = 0) in vec4 position;
             uniform vec2 entityPosition;
+            uniform float entityScale;
 
             void main(void)
             {
-                gl_Position = position + vec4(entityPosition, 1.0, 1.0);
+                gl_Position = position * entityScale + vec4(entityPosition, 1.0, 1.0);
             }
         ";
 
         private const string FragmentShaderSource = @"
             #version 330
 
+            uniform vec4 entityColour;
             out vec4 outputColor;
 
             void main(void)
             {
-                outputColor = vec4(1.0, 1.0, 0.0, 1.0);
+                outputColor = entityColour;
             }
         ";
 
@@ -88,9 +90,16 @@ namespace Graveyard_Escape_Game.Renderers
             GL.BindVertexArray(_vertexArrayObject);
             GL.UseProgram(_shaderProgram);
 
-            // Set the entity position uniform
+            // Set the entity position and scale uniforms
             int entityPositionLocation = GL.GetUniformLocation(_shaderProgram, "entityPosition");
             GL.Uniform2(entityPositionLocation, entity.Position.X, entity.Position.Y);
+
+            int entityScaleLocation = GL.GetUniformLocation(_shaderProgram, "entityScale");
+            GL.Uniform1(entityScaleLocation, entity.Scale);
+
+            // Set the entity colour uniform
+            int entityColourLocation = GL.GetUniformLocation(_shaderProgram, "entityColour");
+            GL.Uniform4(entityColourLocation, entity.Colour.X, entity.Colour.Y, entity.Colour.Z, entity.Colour.W);
 
             GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
         }
