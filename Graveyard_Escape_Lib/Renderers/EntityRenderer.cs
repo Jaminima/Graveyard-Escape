@@ -24,7 +24,7 @@ namespace Graveyard_Escape_Game.Renderers
 
             void main(void)
             {
-                gl_Position = position + vec4(entityPosition, 0.0, 0.0);
+                gl_Position = position + vec4(entityPosition, 1.0, 1.0);
             }
         ";
 
