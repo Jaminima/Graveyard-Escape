@@ -87,11 +87,7 @@ namespace Graveyard_Escape_Game
             GL.BindVertexArray(0);
             GL.UseProgram(0);
 
-            GL.DeleteBuffer(_vertexBufferObject);
-            GL.DeleteVertexArray(_vertexArrayObject);
-            GL.DeleteProgram(_shaderProgram);
-            GL.DeleteShader(_fragmentShader);
-            GL.DeleteShader(_vertexShader);
+            _world.Entities.ForEach(entity => entity.Unload());
 
             base.OnUnload();
         }

@@ -27,5 +27,9 @@ namespace Graveyard_Escape_Lib.Types
         {
             _Renderer.RenderGL();
         }
+
+        public void Unload(){
+            _Renderer.UnloadGL();
+        }
     }
 }

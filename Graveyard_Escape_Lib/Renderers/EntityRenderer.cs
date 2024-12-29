@@ -90,5 +90,14 @@ namespace Graveyard_Escape_Game.Renderers
             GL.UseProgram(_shaderProgram);
             GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
         }
+
+        public void UnloadGL()
+        {
+            GL.DeleteBuffer(_vertexBufferObject);
+            GL.DeleteVertexArray(_vertexArrayObject);
+            GL.DeleteProgram(_shaderProgram);
+            GL.DeleteShader(_vertexShader);
+            GL.DeleteShader(_fragmentShader);
+        }
     }
 }
