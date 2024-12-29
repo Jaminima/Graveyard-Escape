@@ -77,23 +77,63 @@ namespace Graveyard_Escape_Lib.Types
 
             for (int i = 0; i < VertexData.Length; i += 4)
             {
-                Vector2 point = new Vector2(VertexData[i], VertexData[i + 1]);
-                point = Vector2.Transform(point, transform);
+                Vector2 point1 = new Vector2(VertexData[i], VertexData[i + 1]);
+                Vector2 point2 = new Vector2(VertexData[(i + 4) % VertexData.Length], VertexData[(i + 5) % VertexData.Length]);
+                point1 = Vector2.Transform(point1, transform);
+                point2 = Vector2.Transform(point2, transform);
 
                 for (int j = 0; j < other.VertexData.Length; j += 4)
                 {
-                    Vector2 otherPoint = new Vector2(other.VertexData[j], other.VertexData[j + 1]);
-                    otherPoint = Vector2.Transform(otherPoint, otherTransform);
+                    Vector2 otherPoint1 = new Vector2(other.VertexData[j], other.VertexData[j + 1]);
+                    Vector2 otherPoint2 = new Vector2(other.VertexData[(j + 4) % other.VertexData.Length], other.VertexData[(j + 5) % other.VertexData.Length]);
+                    otherPoint1 = Vector2.Transform(otherPoint1, otherTransform);
+                    otherPoint2 = Vector2.Transform(otherPoint2, otherTransform);
 
-                    if (Vector2.Distance(point, otherPoint) < (Scale + other.Scale) * 0.5f)
+                    if (LinesIntersect(point1, point2, otherPoint1, otherPoint2, out collisionPoint))
                     {
-                        collisionPoint = point;
                         return true;
                     }
                 }
             }
             collisionPoint = Vector2.Zero;
             return false;
+        }
+
+        private bool LinesIntersect(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4, out Vector2 intersection)
+        {
+            float A1 = p2.Y - p1.Y;
+            float B1 = p1.X - p2.X;
+            float C1 = A1 * p1.X + B1 * p1.Y;
+
+            float A2 = p4.Y - p3.Y;
+            float B2 = p3.X - p4.X;
+            float C2 = A2 * p3.X + B2 * p3.Y;
+
+            float delta = A1 * B2 - A2 * B1;
+
+            if (delta == 0)
+            {
+                intersection = Vector2.Zero;
+                return false; // Lines are parallel
+            }
+
+            float x = (B2 * C1 - B1 * C2) / delta;
+            float y = (A1 * C2 - A2 * C1) / delta;
+            intersection = new Vector2(x, y);
+
+            if (IsBetween(p1, p2, intersection) && IsBetween(p3, p4, intersection))
+            {
+                return true;
+            }
+
+            intersection = Vector2.Zero;
+            return false;
+        }
+
+        private bool IsBetween(Vector2 a, Vector2 b, Vector2 c)
+        {
+            return (c.X >= Math.Min(a.X, b.X) && c.X <= Math.Max(a.X, b.X) &&
+                    c.Y >= Math.Min(a.Y, b.Y) && c.Y <= Math.Max(a.Y, b.Y));
         }
     }
 }
