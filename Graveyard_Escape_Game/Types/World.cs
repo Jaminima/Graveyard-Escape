@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 
 using Graveyard_Escape_Game.Renderers;
@@ -20,7 +21,7 @@ namespace Graveyard_Escape_Lib.Types
             float[] entityVertexData = Entity<EntityRenderer>.LoadVertexData("entity");
 
             // Add some entities
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 20; i++)
             {
                 float x = (float)random.NextDouble() * 2.0f - 1.0f;
                 float y = (float)random.NextDouble() * 2.0f - 1.0f;
@@ -37,10 +38,32 @@ namespace Graveyard_Escape_Lib.Types
 
         public void Update(float dtime)
         {
-            foreach (var entity in Entities)
+            for (int i = 0; i < Entities.Count; i++)
             {
+                var entity = Entities[i];
                 entity.Position += entity.Velocity * dtime * 10;
                 entity.Rotation += 0.1f * dtime;
+            }
+
+            // Check for collisions
+            for (int i = 0; i < Entities.Count; i++)
+            {
+                var entity = Entities[i];
+                for (int j = 0; j < Entities.Count; j++)
+                {
+                    var otherEntity = Entities[j];
+                    if (entity != otherEntity)
+                    {
+                        if (entity.CollidesWith(otherEntity, out Vector2 collisionPoint))
+                        {
+                            entity.Velocity = -entity.Velocity;
+                            entity.Position += entity.Velocity * dtime * 10;
+
+                            otherEntity.Velocity = -otherEntity.Velocity;
+                            otherEntity.Position += otherEntity.Velocity * dtime * 10;
+                        }
+                    }
+                }
             }
         }
     }

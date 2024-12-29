@@ -69,5 +69,31 @@ namespace Graveyard_Escape_Lib.Types
         public void Unload(){
             _Renderer.UnloadGL();
         }
+
+        public bool CollidesWith(Entity<T> other, out Vector2 collisionPoint)
+        {
+            Matrix3x2 transform = Matrix3x2.CreateScale(Scale) * Matrix3x2.CreateRotation(Rotation) * Matrix3x2.CreateTranslation(Position);
+            Matrix3x2 otherTransform = Matrix3x2.CreateScale(other.Scale) * Matrix3x2.CreateRotation(other.Rotation) * Matrix3x2.CreateTranslation(other.Position);
+
+            for (int i = 0; i < VertexData.Length; i += 4)
+            {
+                Vector2 point = new Vector2(VertexData[i], VertexData[i + 1]);
+                point = Vector2.Transform(point, transform);
+
+                for (int j = 0; j < other.VertexData.Length; j += 4)
+                {
+                    Vector2 otherPoint = new Vector2(other.VertexData[j], other.VertexData[j + 1]);
+                    otherPoint = Vector2.Transform(otherPoint, otherTransform);
+
+                    if (Vector2.Distance(point, otherPoint) < (Scale + other.Scale) * 0.5f)
+                    {
+                        collisionPoint = point;
+                        return true;
+                    }
+                }
+            }
+            collisionPoint = Vector2.Zero;
+            return false;
+        }
     }
 }
