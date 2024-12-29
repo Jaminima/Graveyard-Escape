@@ -32,7 +32,9 @@ namespace Graveyard_Escape_Lib.Types
                 float g = random.Next(0, 255) / 255.0f;
                 float b = random.Next(0, 255) / 255.0f;
 
-                Entities.Add(new Entity<EntityRenderer>(entityVertexData) { Position = new System.Numerics.Vector2(x, y), Scale=0.01f, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
+                float SpinSpeed = (float)random.NextDouble() * 1.0f - 0.50f;
+
+                Entities.Add(new Entity<EntityRenderer>(entityVertexData) { Position = new System.Numerics.Vector2(x, y), Scale=0.01f, SpinSpeed = SpinSpeed, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
             }
         }
 
@@ -42,7 +44,7 @@ namespace Graveyard_Escape_Lib.Types
             {
                 var entity = Entities[i];
                 entity.Position += entity.Velocity * dtime * 10;
-                entity.Rotation += 0.1f * dtime;
+                entity.Rotation += entity.SpinSpeed * dtime;
             }
 
             // Check for collisions

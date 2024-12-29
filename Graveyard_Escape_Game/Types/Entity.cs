@@ -11,6 +11,7 @@ namespace Graveyard_Escape_Lib.Types
         private readonly Renderer _Renderer;
         public Vector2 Position { get; set; }
         public Vector2 Velocity { get; set; }
+        public float SpinSpeed { get; set; } = 0.0f;
         public float Scale { get; set; } = 1.0f;
         public Vector4 Colour { get; set; } = new Vector4(1.0f, 1.0f, 1.0f, 1.0f);
         public float Rotation { get; set; } = 0.0f;
