@@ -18,7 +18,7 @@ namespace Graveyard_Escape_Lib.Types
             Entities = new List<Entity<EntityRenderer>>();
 
             // Add some entities
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 1; i++)
             {
                 float x = (float)random.NextDouble() * 2.0f - 1.0f;
                 float y = (float)random.NextDouble() * 2.0f - 1.0f;
@@ -29,7 +29,7 @@ namespace Graveyard_Escape_Lib.Types
                 float g = random.Next(0, 255) / 255.0f;
                 float b = random.Next(0, 255) / 255.0f;
 
-                Entities.Add(new Entity<EntityRenderer>() { Position = new System.Numerics.Vector2(x, y), Scale=0.1f, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
+                Entities.Add(new Entity<EntityRenderer>() { Position = new System.Numerics.Vector2(x, y), Scale=0.5f, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
             }
         }
 

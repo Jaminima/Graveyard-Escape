@@ -10,6 +10,7 @@ void main(void)
     float cosTheta = cos(entityRotation);
     float sinTheta = sin(entityRotation);
     mat2 rotationMatrix = mat2(cosTheta, -sinTheta, sinTheta, cosTheta);
-    vec2 rotatedPosition = rotationMatrix * position.xy;
-    gl_Position = vec4(rotatedPosition * entityScale + entityPosition, position.zw);
+    vec2 scaledPosition = position.xy * entityScale;
+    vec2 rotatedPosition = rotationMatrix * scaledPosition;
+    gl_Position = vec4(rotatedPosition + entityPosition, position.zw);
 }
