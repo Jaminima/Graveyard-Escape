@@ -15,30 +15,7 @@ namespace Graveyard_Escape_Game
         private readonly int _height;
         private readonly string _title;
         private readonly World _world;
-
-        // Shader sources
-        private const string VertexShaderSource = @"
-            #version 330
-
-            layout(location = 0) in vec4 position;
-
-            void main(void)
-            {
-                gl_Position = position;
-            }
-        ";
-
-        private const string FragmentShaderSource = @"
-            #version 330
-
-            out vec4 outputColor;
-
-            void main(void)
-            {
-                outputColor = vec4(1.0, 0.0, 0.0, 1.0);
-            }
-        ";
-
+        
         // Triangle vertices
         private readonly float[] _points = {
             -0.5f, 0.0f, 0.0f, 1.0f,
