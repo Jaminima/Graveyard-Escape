@@ -39,11 +39,16 @@ namespace Graveyard_Escape_Game.Renderers
             }
         ";
 
-        // Triangle vertices
+        // Quad vertices using two triangles
         private readonly float[] _points = {
-            -0.5f, 0.0f, 0.0f, 1.0f,
-            0.5f, 0.0f, 0.0f, 1.0f,
-            0.0f, 0.5f, 0.0f, 1.0f
+            // First triangle
+            -0.5f, -0.5f, 0.0f, 1.0f,
+            0.5f, -0.5f, 0.0f, 1.0f,
+            0.5f, 0.5f, 0.0f, 1.0f,
+            // Second triangle
+            0.5f, 0.5f, 0.0f, 1.0f,
+            -0.5f, 0.5f, 0.0f, 1.0f,
+            -0.5f, -0.5f, 0.0f, 1.0f
         };
 
         public void InitGL()
@@ -87,7 +92,7 @@ namespace Graveyard_Escape_Game.Renderers
             int entityPositionLocation = GL.GetUniformLocation(_shaderProgram, "entityPosition");
             GL.Uniform2(entityPositionLocation, entity.Position.X, entity.Position.Y);
 
-            GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
         }
 
         public void UnloadGL()
