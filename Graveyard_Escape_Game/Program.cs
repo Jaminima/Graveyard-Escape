@@ -4,7 +4,7 @@
     {
         static void Main(string[] args)
         {
-            var window = new Window(800, 600, "Graveyard Escape Game");
+            var window = new Window(1920, 1080, "Graveyard Escape Game");
 
             window.Run();
         }
