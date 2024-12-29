@@ -20,6 +20,7 @@ namespace Graveyard_Escape_Lib.Types
         public Vector4 Colour { get; set; } = new Vector4(1.0f, 1.0f, 1.0f, 1.0f);
         public float Rotation { get; set; } = 0.0f;
         public float[] VertexData { get; set; }
+        public bool MarkedForDeletion { get; set; } = false;
 
 
         public Entity(string vertexFileName)

@@ -39,7 +39,7 @@ namespace Graveyard_Escape_Lib.Types
 
                 float SpinSpeed = (float)random.NextDouble() * 1.0f - 0.50f;
 
-                Entities.Add(new Entity<EntityRenderer>(entityVertexData) { Id = i, Position = new System.Numerics.Vector2(x, y), Scale=0.01f, SpinSpeed = SpinSpeed, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
+                Entities.Add(new Entity<EntityRenderer>(entityVertexData) { Id = i, Position = new System.Numerics.Vector2(x, y), Scale=0.005f, SpinSpeed = SpinSpeed, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
             }
         }
 
@@ -65,11 +65,24 @@ namespace Graveyard_Escape_Lib.Types
                                 Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
                                 entity.Velocity += gravitationalForce * dtime;
 
-                                if (distance < 1 && entity.CollidesWith(otherEntity, out Vector2 collisionPoint))
+                                if (distance < 0.5f && entity.CollidesWith(otherEntity, out Vector2 collisionPoint))
                                 {
                                     // Calculate the bounce
                                     Vector2 normal = Vector2.Normalize(entity.Position - otherEntity.Position);
                                     Vector2 relativeVelocity = entity.Velocity - otherEntity.Velocity;
+
+                                    float relativeSpeed = Math.Abs(Vector2.Dot(relativeVelocity, normal));
+                                    if (relativeSpeed < 0.1f)
+                                    {
+                                        entity.Velocity = new Vector2(relativeVelocity.X, relativeVelocity.Y);
+                                        entity.Scale = (float)Math.Sqrt(entity.Scale * entity.Scale + otherEntity.Scale * otherEntity.Scale);
+                                        entity.Mass = entity.Mass + otherEntity.Mass;
+                                        entity.SpinSpeed = (entity.SpinSpeed + otherEntity.SpinSpeed) / 2;
+
+                                        otherEntity.MarkedForDeletion = true;
+                                        continue;
+                                    }
+
                                     float velocityAlongNormal = Vector2.Dot(relativeVelocity, normal);
 
                                     if (velocityAlongNormal > 0)
@@ -111,8 +124,16 @@ namespace Graveyard_Escape_Lib.Types
             for (int i = 0; i < Entities.Count; i++)
             {
                 var entity = Entities[i];
+
+                if (entity.MarkedForDeletion)
+                {
+                    Entities.RemoveAt(i);
+                    i--;
+                    continue;
+                }
+
                 entity.Position += entity.Velocity * dtime;
-                entity.Rotation += entity.SpinSpeed;
+                entity.Rotation += entity.SpinSpeed * dtime;
 
                 if (entity.Position.X > 1.0f || entity.Position.X < -1.0f)
                 {
