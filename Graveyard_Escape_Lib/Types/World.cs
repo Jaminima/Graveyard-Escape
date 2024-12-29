@@ -11,17 +11,31 @@ namespace Graveyard_Escape_Lib.Types
 
         public World()
         {
-            Entities = new List<Entity>() {
-                new Entity() { Position = new System.Numerics.Vector2(0.0f, 0.0f), Velocity = new System.Numerics.Vector2(0.01f, 0.01f), Colour= new System.Numerics.Vector4(1.0f, 0.0f, 0.0f, 1.0f) },
-                new Entity() { Position = new System.Numerics.Vector2(0.0f, 0.5f), Rotation=0.5f, Velocity = new System.Numerics.Vector2(-0.01f, -0.01f), Colour= new System.Numerics.Vector4(0.0f, 1.0f, 0.0f, 1.0f), Scale=0.1f },
-            };
+            Random random = new Random();
+
+            Entities = new List<Entity>();
+
+            // Add some entities
+            for (int i = 0; i < 10; i++)
+            {
+                float x = (float)random.NextDouble() * 2.0f - 1.0f;
+                float y = (float)random.NextDouble() * 2.0f - 1.0f;
+                float vx = (float)random.NextDouble() * 0.02f - 0.01f;
+                float vy = (float)random.NextDouble() * 0.02f - 0.01f;
+
+                float r = random.Next(0, 255) / 255.0f;
+                float g = random.Next(0, 255) / 255.0f;
+                float b = random.Next(0, 255) / 255.0f;
+
+                Entities.Add(new Entity() { Position = new System.Numerics.Vector2(x, y), Scale=0.1f, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
+            }
         }
 
         public void Update(float dtime)
         {
             foreach (var entity in Entities)
             {
-                //entity.Position += entity.Velocity;
+                entity.Position += entity.Velocity * dtime;
                 entity.Rotation += 0.1f * dtime;
             }
         }
