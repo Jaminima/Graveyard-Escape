@@ -15,6 +15,10 @@ namespace Graveyard_Escape_Game.Renderers
             _entity = entity;
         }
 
+        public void Init(){
+            Console.WriteLine("Initializing entity renderer");
+        }
+
         public void Render()
         {
             Console.WriteLine($"Rendering entity at {_entity.Position}");
