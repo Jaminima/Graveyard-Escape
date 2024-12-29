@@ -1,3 +1,4 @@
+using Graveyard_Escape_Lib.Types;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
@@ -13,12 +14,14 @@ namespace Graveyard_Escape_Game
         private readonly int _width;
         private readonly int _height;
         private readonly string _title;
+        private readonly World _world;
 
         public Window(int width, int height, string title): base(new GameWindowSettings(), new NativeWindowSettings() { ClientSize = new Vector2i(width, height), Title = title,   })
         {
             _width = width;
             _height = height;
             _title = title;
+            _world = new World();
         }
 
         protected override void OnLoad()
@@ -38,6 +41,7 @@ namespace Graveyard_Escape_Game
         {
             base.OnUpdateFrame(e);
             // ...update logic...
+            _world.Update();
         }
 
         protected override void OnResize(ResizeEventArgs e)
