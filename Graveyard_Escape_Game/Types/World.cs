@@ -65,7 +65,7 @@ namespace Graveyard_Escape_Lib.Types
                                 Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
                                 entity.Velocity += gravitationalForce * dtime;
 
-                                if (entity.IsNear(otherEntity, 1, out _) && entity.CollidesWith(otherEntity, out Vector2 collisionPoint))
+                                if (distance < 1 && entity.CollidesWith(otherEntity, out Vector2 collisionPoint))
                                 {
                                     // Calculate the bounce
                                     Vector2 normal = Vector2.Normalize(entity.Position - otherEntity.Position);
@@ -113,6 +113,16 @@ namespace Graveyard_Escape_Lib.Types
                 var entity = Entities[i];
                 entity.Position += entity.Velocity * dtime;
                 entity.Rotation += entity.SpinSpeed;
+
+                if (entity.Position.X > 1.0f || entity.Position.X < -1.0f)
+                {
+                    entity.Velocity = new Vector2(-entity.Velocity.X, entity.Velocity.Y);
+                }
+
+                if (entity.Position.Y > 1.0f || entity.Position.Y < -1.0f)
+                {
+                    entity.Velocity = new Vector2(entity.Velocity.X, -entity.Velocity.Y);
+                }
             }
         }
     }
