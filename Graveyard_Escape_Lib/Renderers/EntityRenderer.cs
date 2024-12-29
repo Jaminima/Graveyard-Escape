@@ -9,8 +9,6 @@ namespace Graveyard_Escape_Game.Renderers
 {
     public class EntityRenderer
     {
-        private readonly Entity _entity;
-
         private int _vertexShader;
         private int _fragmentShader;
         private int _shaderProgram;
@@ -22,10 +20,11 @@ namespace Graveyard_Escape_Game.Renderers
             #version 330
 
             layout(location = 0) in vec4 position;
+            uniform vec2 entityPosition;
 
             void main(void)
             {
-                gl_Position = position;
+                gl_Position = position + vec4(entityPosition, 0.0, 0.0);
             }
         ";
 
@@ -46,11 +45,6 @@ namespace Graveyard_Escape_Game.Renderers
             0.5f, 0.0f, 0.0f, 1.0f,
             0.0f, 0.5f, 0.0f, 1.0f
         };
-
-        public EntityRenderer(Entity entity)
-        {
-            _entity = entity;
-        }
 
         public void InitGL()
         {
@@ -82,12 +76,17 @@ namespace Graveyard_Escape_Game.Renderers
             GL.EnableVertexAttribArray(positionLocation);
         }
 
-        public void RenderGL()
+        public void RenderGL(Entity entity)
         {
             // Bind and use shader program
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
             GL.BindVertexArray(_vertexArrayObject);
             GL.UseProgram(_shaderProgram);
+
+            // Set the entity position uniform
+            int entityPositionLocation = GL.GetUniformLocation(_shaderProgram, "entityPosition");
+            GL.Uniform2(entityPositionLocation, entity.Position.X, entity.Position.Y);
+
             GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
         }
 

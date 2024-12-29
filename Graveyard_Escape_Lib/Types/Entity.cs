@@ -16,16 +16,21 @@ namespace Graveyard_Escape_Lib.Types
 
         public Entity()
         {
-            _Renderer = new EntityRenderer(this);
+            _Renderer = new EntityRenderer();
         }
 
         public void Init(){
             _Renderer.InitGL();
         }
 
+        public void UpdatePosition(Vector2 newPosition)
+        {
+            Position = newPosition;
+        }
+
         public void Render()
         {
-            _Renderer.RenderGL();
+            _Renderer.RenderGL(this);
         }
 
         public void Unload(){
