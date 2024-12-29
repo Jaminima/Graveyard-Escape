@@ -29,8 +29,8 @@ namespace Graveyard_Escape_Lib.Types
                 float vy = (float)random.NextDouble() * 0.02f - 0.01f;
 
                 if (random.Next(0, 10) > 8){
-                    vx *= 100;
-                    vy *= 100;
+                    vx *= 10;
+                    vy *= 10;
                 }
 
                 float r = random.Next(0, 255) / 255.0f;
@@ -45,51 +45,64 @@ namespace Graveyard_Escape_Lib.Types
 
         public void Update(float dtime)
         {
-            // Check for collisions
+            // Check for collisions and gravitational pull
             for (int i = 0; i < Entities.Count; i++)
             {
                 var entity = Entities[i];
                 for (int j = 0; j < Entities.Count; j++)
                 {
                     var otherEntity = Entities[j];
-                    if (entity.Id != otherEntity.Id && entity.LastCollisionId != otherEntity.Id)
+                    if (entity.Id != otherEntity.Id)
                     {
-                        if (entity.IsNear(otherEntity, 1) && entity.CollidesWith(otherEntity, out Vector2 collisionPoint))
+
+                        if (entity.LastCollisionId != otherEntity.Id)
                         {
-                            // Calculate the bounce
-                            Vector2 normal = Vector2.Normalize(entity.Position - otherEntity.Position);
-                            Vector2 relativeVelocity = entity.Velocity - otherEntity.Velocity;
-                            float velocityAlongNormal = Vector2.Dot(relativeVelocity, normal);
-
-                            if (velocityAlongNormal > 0)
-                                continue;
-
-                            float restitution = 1.0f; // Perfectly elastic collision
-                            float impulseScalar = -(1 + restitution) * velocityAlongNormal;
-                            impulseScalar /= 1 / entity.Mass + 1 / otherEntity.Mass;
-
-                            Vector2 impulse = impulseScalar * normal;
-
-                            // Apply impulse based on relative positions
-                            var angleBetween = Vector2.Dot(entity.Position - otherEntity.Position, impulse);
-                            if (angleBetween > Math.PI / 2)
+                            if (entity.IsNear(otherEntity, 20, out float distance))
                             {
-                                entity.Velocity -= impulse / entity.Mass;
-                                otherEntity.Velocity += impulse / otherEntity.Mass;
-                            }
-                            else
-                            {
-                                entity.Velocity += impulse / entity.Mass;
-                                otherEntity.Velocity -= impulse / otherEntity.Mass;
-                            }
+                                Vector2 direction = otherEntity.Position - entity.Position;
+                                float distanceSquared = direction.LengthSquared();
+                                float gravitationalConstant = 0.001f;
+                                Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
+                                entity.Velocity += gravitationalForce * dtime;
 
-                            // Calculate the effect of SpinSpeed
-                            float spinEffect = (entity.SpinSpeed - otherEntity.SpinSpeed) * 0.1f;
-                            entity.Velocity += new Vector2(-normal.Y, normal.X) * spinEffect;
-                            otherEntity.Velocity -= new Vector2(-normal.Y, normal.X) * spinEffect;
+                                if (entity.IsNear(otherEntity, 1, out _) && entity.CollidesWith(otherEntity, out Vector2 collisionPoint))
+                                {
+                                    // Calculate the bounce
+                                    Vector2 normal = Vector2.Normalize(entity.Position - otherEntity.Position);
+                                    Vector2 relativeVelocity = entity.Velocity - otherEntity.Velocity;
+                                    float velocityAlongNormal = Vector2.Dot(relativeVelocity, normal);
 
-                            entity.LastCollisionId = otherEntity.Id;
-                            otherEntity.LastCollisionId = entity.Id;
+                                    if (velocityAlongNormal > 0)
+                                        continue;
+
+                                    float restitution = 0.1f; // Perfectly elastic collision
+                                    float impulseScalar = -(1 + restitution) * velocityAlongNormal;
+                                    impulseScalar /= 1 / entity.Mass + 1 / otherEntity.Mass;
+
+                                    Vector2 impulse = impulseScalar * normal;
+
+                                    // Apply impulse based on relative positions
+                                    var angleBetween = Vector2.Dot(entity.Position - otherEntity.Position, impulse);
+                                    if (angleBetween > Math.PI / 2)
+                                    {
+                                        entity.Velocity -= impulse / entity.Mass;
+                                        otherEntity.Velocity += impulse / otherEntity.Mass;
+                                    }
+                                    else
+                                    {
+                                        entity.Velocity += impulse / entity.Mass;
+                                        otherEntity.Velocity -= impulse / otherEntity.Mass;
+                                    }
+
+                                    // Calculate the effect of SpinSpeed
+                                    float spinEffect = (entity.SpinSpeed - otherEntity.SpinSpeed) * 0.1f;
+                                    entity.Velocity += new Vector2(-normal.Y, normal.X) * spinEffect;
+                                    otherEntity.Velocity -= new Vector2(-normal.Y, normal.X) * spinEffect;
+
+                                    entity.LastCollisionId = otherEntity.Id;
+                                    otherEntity.LastCollisionId = entity.Id;
+                                }
+                            }
                         }
                     }
                 }

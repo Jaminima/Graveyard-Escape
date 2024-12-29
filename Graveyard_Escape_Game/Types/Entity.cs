@@ -76,9 +76,10 @@ namespace Graveyard_Escape_Lib.Types
             _Renderer.UnloadGL();
         }
 
-        public bool IsNear(Entity<T> other, float distance)
+        public bool IsNear(Entity<T> other, float maxDistance, out float distance)
         {
-            return Vector2.Distance(Position, other.Position) / Scale < distance;
+            distance = Vector2.Distance(Position, other.Position) / Scale;
+            return distance < maxDistance;
         }
 
         public bool CollidesWith(Entity<T> other, out Vector2 collisionPoint)
