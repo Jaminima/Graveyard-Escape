@@ -19,37 +19,6 @@ namespace Graveyard_Escape_Game.Renderers
         private int _entityRotationLocation;
         private int _entityColourLocation;
 
-        // Shader sources
-        private const string VertexShaderSource = @"
-            #version 330
-
-            layout(location = 0) in vec4 position;
-            uniform vec2 entityPosition;
-            uniform float entityScale;
-            uniform float entityRotation;
-
-            void main(void)
-            {
-                float cosTheta = cos(entityRotation);
-                float sinTheta = sin(entityRotation);
-                mat2 rotationMatrix = mat2(cosTheta, -sinTheta, sinTheta, cosTheta);
-                vec2 rotatedPosition = rotationMatrix * position.xy;
-                gl_Position = vec4(rotatedPosition * entityScale + entityPosition, position.zw);
-            }
-        ";
-
-        private const string FragmentShaderSource = @"
-            #version 330
-
-            uniform vec4 entityColour;
-            out vec4 outputColor;
-
-            void main(void)
-            {
-                outputColor = entityColour;
-            }
-        ";
-
         // Quad vertices using two triangles
         private readonly float[] _points = {
             // First triangle
@@ -65,12 +34,14 @@ namespace Graveyard_Escape_Game.Renderers
         public void InitGL()
         {
             // Compile shaders
+            string vertexShaderCode = File.ReadAllText("GLSL/entity.vertex.glsl");
             _vertexShader = GL.CreateShader(ShaderType.VertexShader);
-            GL.ShaderSource(_vertexShader, VertexShaderSource);
+            GL.ShaderSource(_vertexShader, vertexShaderCode);
             GL.CompileShader(_vertexShader);
 
+            string fragmentShaderCode = File.ReadAllText("GLSL/entity.fragment.glsl");
             _fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
-            GL.ShaderSource(_fragmentShader, FragmentShaderSource);
+            GL.ShaderSource(_fragmentShader, fragmentShaderCode);
             GL.CompileShader(_fragmentShader);
 
             // Create shader program
