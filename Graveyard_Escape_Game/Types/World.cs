@@ -65,8 +65,18 @@ namespace Graveyard_Escape_Lib.Types
 
                             Vector2 impulse = impulseScalar * normal;
 
-                            entity.Velocity -= impulse / entity.Mass;
-                            otherEntity.Velocity += impulse / otherEntity.Mass;
+                            // Apply impulse based on relative positions
+                            var angleBetween = Vector2.Dot(entity.Position - otherEntity.Position, impulse);
+                            if (angleBetween > Math.PI / 2)
+                            {
+                                entity.Velocity -= impulse / entity.Mass;
+                                otherEntity.Velocity += impulse / otherEntity.Mass;
+                            }
+                            else
+                            {
+                                entity.Velocity += impulse / entity.Mass;
+                                otherEntity.Velocity -= impulse / otherEntity.Mass;
+                            }
 
                             entity.LastCollisionId = otherEntity.Id;
                             otherEntity.LastCollisionId = entity.Id;
