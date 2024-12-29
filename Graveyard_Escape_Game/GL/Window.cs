@@ -16,19 +16,6 @@ namespace Graveyard_Escape_Game
         private readonly string _title;
         private readonly World _world;
 
-        // Triangle vertices
-        private readonly float[] _points = {
-            -0.5f, 0.0f, 0.0f, 1.0f,
-            0.5f, 0.0f, 0.0f, 1.0f,
-            0.0f, 0.5f, 0.0f, 1.0f
-        };
-
-        private int _vertexShader;
-        private int _fragmentShader;
-        private int _shaderProgram;
-        private int _vertexBufferObject;
-        private int _vertexArrayObject;
-
         //FPS counter
         private double _time = 0;
         private int _frames = 0;
@@ -59,7 +46,10 @@ namespace Graveyard_Escape_Game
             GL.LoadIdentity();
 
             // Initialize OpenGL for entities
-            _world.Entities.ForEach(entity => entity.Init());
+            foreach (var entity in _world.Entities)
+            {
+                entity.Init();
+            }
         }
 
         protected override void OnUnload()
@@ -79,7 +69,10 @@ namespace Graveyard_Escape_Game
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             // Render entities
-            _world.Entities.ForEach(entity => entity.Render());
+            foreach (var entity in _world.Entities)
+            {
+                entity.Render();
+            }
 
             SwapBuffers();
 

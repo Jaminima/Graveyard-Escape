@@ -88,7 +88,7 @@ namespace Graveyard_Escape_Game.Renderers
             GL.EnableVertexAttribArray(positionLocation);
         }
 
-        public void RenderGL(Entity<EntityRenderer> entity)
+        public void RenderGL<T>(Entity<T> entity) where T : Renderer, new()
         {
             // Bind and use shader program
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
