@@ -33,6 +33,9 @@ namespace Graveyard_Escape_Game
             base.OnLoad();
             GL.ClearColor(Color4.Black);
 
+            // Print graphics system information
+            PrintGraphicsInfo();
+
             // Disable depth test for 2D rendering
             GL.Disable(EnableCap.DepthTest);
 
@@ -102,6 +105,16 @@ namespace Graveyard_Escape_Game
             GL.MatrixMode(MatrixMode.Projection);
             GL.LoadIdentity();
             GL.Ortho(0.0, e.Width, 0.0, e.Height, -1.0, 1.0);
+        }
+
+        private void PrintGraphicsInfo()
+        {
+            string renderer = GL.GetString(StringName.Renderer);
+            string version = GL.GetString(StringName.Version);
+            string vendor = GL.GetString(StringName.Vendor);
+            Console.WriteLine($"Renderer: {renderer}");
+            Console.WriteLine($"OpenGL version: {version}");
+            Console.WriteLine($"Vendor: {vendor}");
         }
     }
 }
