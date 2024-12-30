@@ -21,7 +21,7 @@ namespace Graveyard_Escape_Lib.Types
             float[] entityVertexData = Entity<EntityRenderer>.LoadVertexData("entity");
 
             // Add some entities
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 100; i++)
             {
                 float x = (float)random.NextDouble() * 2.0f - 1.0f;
                 x/=3;
@@ -49,6 +49,23 @@ namespace Graveyard_Escape_Lib.Types
 
         public void Update(float dtime)
         {
+            bool[][] collisionMatrix = new bool[Entities.Count][];
+            for (int i = 0; i < Entities.Count; i++)
+            {
+                collisionMatrix[i] = new bool[Entities.Count - i - 1];
+
+                for (int j = 0; j < collisionMatrix[i].Length; j++)
+                {
+                    bool near = Entities[i].IsNear(Entities[j + i + 1], 1, out float distance);
+
+                    if (!near){
+                        continue;
+                    }
+
+                    collisionMatrix[i][j] = Entities[i].CollidesWith(Entities[j + i + 1], out Vector2 collisionPoint);
+                }
+            }
+
             for (int i = 0;i< Entities.Count; i++)
             {
                 var entity = Entities[i];
