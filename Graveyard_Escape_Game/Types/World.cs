@@ -68,8 +68,6 @@ namespace Graveyard_Escape_Lib.Types
                     var otherEntity = Entities[j];
                     if (entity.Id != otherEntity.Id)
                     {
-                        if (!entity.LastCollidedWith.Contains(otherEntity.Id))
-                        {
                             if (entity.IsNear(otherEntity, 10, out float distance))
                             {
                                 Vector2 direction = otherEntity.Position - entity.Position;
@@ -81,6 +79,12 @@ namespace Graveyard_Escape_Lib.Types
 
                                 if (distance < 1.0f && entity.CollidesWith(otherEntity, out Vector2 collisionPoint))
                                 {
+                                    if (entity.LastCollidedWith.Contains(otherEntity.Id))
+                                    {
+                                        collidedWith.Add(otherEntity.Id);
+                                        continue;
+                                    }
+
                                     // Calculate the bounce
                                     Vector2 normal = Vector2.Normalize(entity.Position - otherEntity.Position);
                                     Vector2 relativeVelocity = entity.Velocity - otherEntity.Velocity;
@@ -134,7 +138,6 @@ namespace Graveyard_Escape_Lib.Types
                                 }
                             }
                         }
-                    }
                 }
 
                 entity.LastCollidedWith = collidedWith;
@@ -157,7 +160,7 @@ namespace Graveyard_Escape_Lib.Types
                     entity.Velocity = new Vector2(entity.Velocity.X, -entity.Velocity.Y);
                 }
 
-                //entity.Velocity *= 0.9999f;
+                entity.Velocity *= 0.99999f;
             }
         }
     }
