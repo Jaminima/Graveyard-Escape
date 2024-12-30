@@ -21,7 +21,7 @@ namespace Graveyard_Escape_Lib.Types
             float[] entityVertexData = Entity<EntityRenderer>.LoadVertexData("entity");
 
             // Add some entities
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 1000; i++)
             {
                 float x = (float)random.NextDouble() * 2.0f - 1.0f;
                 x/=3;
@@ -74,24 +74,28 @@ namespace Graveyard_Escape_Lib.Types
                             {
                                 Vector2 direction = otherEntity.Position - entity.Position;
                                 float distanceSquared = direction.LengthSquared();
-                                float gravitationalConstant = 0.0001f;
+                                float gravitationalConstant = 0.00001f;
+                                float relativeSize = entity.Scale / otherEntity.Scale;
                                 Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
-                                entity.Velocity += gravitationalForce * dtime;
+                                entity.Velocity += gravitationalForce * dtime * relativeSize;
 
-                                if (distance < 0.5f && entity.CollidesWith(otherEntity, out Vector2 collisionPoint))
+                                if (distance < 1.0f && entity.CollidesWith(otherEntity, out Vector2 collisionPoint))
                                 {
                                     // Calculate the bounce
                                     Vector2 normal = Vector2.Normalize(entity.Position - otherEntity.Position);
                                     Vector2 relativeVelocity = entity.Velocity - otherEntity.Velocity;
 
                                     float relativeSpeed = Math.Abs(Vector2.Dot(relativeVelocity, normal));
-                                    if (relativeSpeed < 0.01f)
+                                    if (relativeSpeed < 0.001f)
                                     {
-                                        entity.Velocity = new Vector2(relativeVelocity.X, relativeVelocity.Y);
+                                        Vector2 relativeMomentum = entity.Velocity / entity.Mass + otherEntity.Velocity / otherEntity.Mass;
+                                        relativeMomentum /= 2;
+
                                         entity.Scale = (float)Math.Sqrt(entity.Scale * entity.Scale + otherEntity.Scale * otherEntity.Scale);
                                         entity.Mass = entity.Mass + otherEntity.Mass;
                                         entity.SpinSpeed = (entity.SpinSpeed + otherEntity.SpinSpeed) / 2;
                                         entity.Colour = entity.Colour + otherEntity.Colour / 2;
+                                        entity.Velocity = relativeMomentum * entity.Mass / (entity.Mass + otherEntity.Mass);
 
                                         otherEntity.MarkedForDeletion = true;
                                         continue;
@@ -110,7 +114,7 @@ namespace Graveyard_Escape_Lib.Types
 
                                     // Apply impulse based on relative positions
                                     var angleBetween = Vector2.Dot(entity.Position - otherEntity.Position, impulse);
-                                    if (angleBetween > Math.PI)
+                                    if (angleBetween > Math.PI / 2)
                                     {
                                         entity.Velocity -= impulse / entity.Mass;
                                         otherEntity.Velocity += impulse / otherEntity.Mass;
@@ -152,6 +156,8 @@ namespace Graveyard_Escape_Lib.Types
                 {
                     entity.Velocity = new Vector2(entity.Velocity.X, -entity.Velocity.Y);
                 }
+
+                //entity.Velocity *= 0.9999f;
             }
         }
     }
