@@ -24,7 +24,11 @@ namespace Graveyard_Escape_Lib.Types
             for (int i = 0; i < 100; i++)
             {
                 float x = (float)random.NextDouble() * 2.0f - 1.0f;
+                x/=3;
+                
                 float y = (float)random.NextDouble() * 2.0f - 1.0f;
+                y/=3;
+
                 float vx = (float)random.NextDouble() * 0.02f - 0.01f;
                 float vy = (float)random.NextDouble() * 0.02f - 0.01f;
 
@@ -39,7 +43,7 @@ namespace Graveyard_Escape_Lib.Types
 
                 float SpinSpeed = (float)random.NextDouble() * 1.0f - 0.50f;
 
-                Entities.Add(new Entity<EntityRenderer>(entityVertexData) { Id = i, Position = new System.Numerics.Vector2(x, y), Scale=0.01f, SpinSpeed = SpinSpeed, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
+                Entities.Add(new Entity<EntityRenderer>(entityVertexData) { Id = i, Position = new System.Numerics.Vector2(x, y), Scale=0.005f, SpinSpeed = SpinSpeed, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
             }
         }
 
@@ -70,7 +74,7 @@ namespace Graveyard_Escape_Lib.Types
                             {
                                 Vector2 direction = otherEntity.Position - entity.Position;
                                 float distanceSquared = direction.LengthSquared();
-                                float gravitationalConstant = 0.001f;
+                                float gravitationalConstant = 0.0001f;
                                 Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
                                 entity.Velocity += gravitationalForce * dtime;
 
@@ -106,7 +110,7 @@ namespace Graveyard_Escape_Lib.Types
 
                                     // Apply impulse based on relative positions
                                     var angleBetween = Vector2.Dot(entity.Position - otherEntity.Position, impulse);
-                                    if (angleBetween > Math.PI / 2)
+                                    if (angleBetween > Math.PI)
                                     {
                                         entity.Velocity -= impulse / entity.Mass;
                                         otherEntity.Velocity += impulse / otherEntity.Mass;
