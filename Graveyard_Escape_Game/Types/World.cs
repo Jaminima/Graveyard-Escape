@@ -49,6 +49,13 @@ namespace Graveyard_Escape_Lib.Types
 
         public void Update(float dtime)
         {
+            for (int i = 0;i< Entities.Count; i++)
+            {
+                var entity = Entities[i];
+                entity.LastCollidedWith = entity.HasCollidedWith;
+                entity.HasCollidedWith.Clear();
+            }
+
             // Check for collisions and gravitational pull
             for (int i = 0; i < Entities.Count; i++)
             {
@@ -60,8 +67,6 @@ namespace Graveyard_Escape_Lib.Types
                     i--;
                     continue;
                 }
-
-                List<int> collidedWith = new List<int>();
 
                 for (int j = 0; j < Entities.Count; j++)
                 {
@@ -79,9 +84,9 @@ namespace Graveyard_Escape_Lib.Types
 
                                 if (distance < 1.0f && entity.CollidesWith(otherEntity, out Vector2 collisionPoint))
                                 {
-                                    if (entity.LastCollidedWith.Contains(otherEntity.Id))
+                                    if (entity.LastCollidedWith.Contains(otherEntity.Id) && entity.HasCollidedWith.Contains(otherEntity.Id))
                                     {
-                                        collidedWith.Add(otherEntity.Id);
+                                        entity.HasCollidedWith.Add(otherEntity.Id);
                                         continue;
                                     }
 
@@ -134,13 +139,12 @@ namespace Graveyard_Escape_Lib.Types
                                     entity.Velocity += new Vector2(-normal.Y, normal.X) * spinEffect;
                                     otherEntity.Velocity -= new Vector2(-normal.Y, normal.X) * spinEffect;
 
-                                    collidedWith.Add(otherEntity.Id);
+                                    entity.HasCollidedWith.Add(otherEntity.Id);
+                                    otherEntity.HasCollidedWith.Add(entity.Id);
                                 }
                             }
                         }
                 }
-
-                entity.LastCollidedWith = collidedWith;
             }
 
             for (int i = 0; i < Entities.Count; i++)

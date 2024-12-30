@@ -10,6 +10,7 @@ namespace Graveyard_Escape_Lib.Types
     {
         public int Id { get; set; }
         public List<int> LastCollidedWith { get; set; } = new List<int>();
+        public List<int> HasCollidedWith { get; set; } = new List<int>();
 
         private readonly Renderer _Renderer;
         public Vector2 Position { get; set; }
