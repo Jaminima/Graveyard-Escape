@@ -33,8 +33,8 @@ namespace Graveyard_Escape_Lib.Types
                 float vy = (float)random.NextDouble() * 0.02f - 0.01f;
 
                 if (random.Next(0, 10) > 8){
-                    vx *= 100;
-                    vy *= 100;
+                    vx *= 10;
+                    vy *= 10;
                 }
 
                 float r = random.Next(0, 255) / 255.0f;
@@ -68,7 +68,7 @@ namespace Graveyard_Escape_Lib.Types
                     var otherEntity = Entities[j];
                     if (entity.Id != otherEntity.Id)
                     {
-                            if (entity.IsNear(otherEntity, 10, out float distance))
+                            if (entity.IsNear(otherEntity, 50, out float distance))
                             {
                                 Vector2 direction = otherEntity.Position - entity.Position;
                                 float distanceSquared = direction.LengthSquared();
@@ -90,7 +90,7 @@ namespace Graveyard_Escape_Lib.Types
                                     Vector2 relativeVelocity = entity.Velocity - otherEntity.Velocity;
 
                                     float relativeSpeed = Math.Abs(Vector2.Dot(relativeVelocity, normal));
-                                    if (relativeSpeed < 0.001f)
+                                    if (relativeSpeed < 0.005f)
                                     {
                                         Vector2 relativeMomentum = entity.Velocity / entity.Mass + otherEntity.Velocity / otherEntity.Mass;
                                         relativeMomentum /= 2;
@@ -150,17 +150,17 @@ namespace Graveyard_Escape_Lib.Types
                 entity.Position += entity.Velocity * dtime;
                 entity.Rotation += entity.SpinSpeed * dtime;
 
-                if (entity.Position.X > 1.0f || entity.Position.X < -1.0f)
-                {
-                    entity.Velocity = new Vector2(-entity.Velocity.X, entity.Velocity.Y);
-                }
+                // if (entity.Position.X > 1.0f || entity.Position.X < -1.0f)
+                // {
+                //     entity.Velocity = new Vector2(-entity.Velocity.X, entity.Velocity.Y);
+                // }
 
-                if (entity.Position.Y > 1.0f || entity.Position.Y < -1.0f)
-                {
-                    entity.Velocity = new Vector2(entity.Velocity.X, -entity.Velocity.Y);
-                }
+                // if (entity.Position.Y > 1.0f || entity.Position.Y < -1.0f)
+                // {
+                //     entity.Velocity = new Vector2(entity.Velocity.X, -entity.Velocity.Y);
+                // }
 
-                entity.Velocity *= 0.99999f;
+                entity.Velocity *= 0.9999f;
             }
         }
     }
