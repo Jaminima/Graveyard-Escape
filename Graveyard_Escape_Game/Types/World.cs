@@ -21,7 +21,7 @@ namespace Graveyard_Escape_Lib.Types
             float[] entityVertexData = Entity<EntityRenderer>.LoadVertexData("entity");
 
             // Add some entities
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 1000; i++)
             {
                 float x = (float)random.NextDouble() * 2.0f - 1.0f;
                 x/=3;
@@ -81,7 +81,7 @@ namespace Graveyard_Escape_Lib.Types
                 var entityX = Entities[x];
                 var entityY = Entities[y];
 
-                bool near = entityX.IsNear(entityY, 50, out float distance);
+                bool near = entityX.IsNear(entityY, 20, out float distance);
 
                 if (!near || distance > 1.0f)
                 {
@@ -94,8 +94,10 @@ namespace Graveyard_Escape_Lib.Types
                 collisionResults[i] = new CollisionResult { Entity1 = x, Entity2 = y, Near = near, Collided = collided, Distance = distance, CollisionPoint = collisionPoint };
             });
 
-            Parallel.For(0, totalCollisions, i => {
-                var collisionResult = collisionResults[i];
+            var nearHits = collisionResults.Where(c => c != null && c.Near).ToList();
+
+            Parallel.For(0, nearHits.Count, i => {
+                var collisionResult = nearHits[i];
 
                 if (collisionResult == null)
                 {
@@ -166,10 +168,10 @@ namespace Graveyard_Escape_Lib.Types
                     Vector2 direction = entityY.Position - entityX.Position;
                     float distanceSquared = direction.LengthSquared();
                     float gravitationalConstant = 0.0001f;
-                    float relativeSize = entityX.Scale / entityY.Scale;
+                    float relativeSize = 1 / (entityY.Scale + entityX.Scale);
                     Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
-                    entityX.Velocity += gravitationalForce * dtime * relativeSize;
-                    entityY.Velocity -= gravitationalForce * dtime * relativeSize;
+                    entityX.Velocity += gravitationalForce * dtime * entityX.Scale * relativeSize;
+                    entityY.Velocity -= gravitationalForce * dtime * entityY.Scale * relativeSize;
                 }
             });
 
@@ -181,12 +183,12 @@ namespace Graveyard_Escape_Lib.Types
 
                 if (entity.Position.X > 1.0f || entity.Position.X < -1.0f)
                 {
-                    entity.Velocity = new Vector2(-entity.Velocity.X, entity.Velocity.Y) / 2;
+                    entity.Velocity = new Vector2(-entity.Velocity.X, entity.Velocity.Y) / 2.0f;
                 }
 
                 if (entity.Position.Y > 1.0f || entity.Position.Y < -1.0f)
                 {
-                    entity.Velocity = new Vector2(entity.Velocity.X, -entity.Velocity.Y) / 2;
+                    entity.Velocity = new Vector2(entity.Velocity.X, -entity.Velocity.Y) / 2.0f;
                 }
 
                 entity.Velocity *= 0.9999f;
