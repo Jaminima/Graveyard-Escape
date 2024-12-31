@@ -59,12 +59,12 @@ namespace Graveyard_Escape_Lib.Types
 
         public void Update(float dtime)
         {
-            int totalCollisions = Entities.Count * Entities.Count; 
+            int totalCollisions = ((Entities.Count * Entities.Count) / 2) - Entities.Count; 
             CollisionResult[] collisionResults = new CollisionResult[totalCollisions];
 
-            Parallel.For(0, totalCollisions, i =>{
-                int y = i / Entities.Count;
-                int x = i % Entities.Count;
+            Parallel.For(0, totalCollisions, i => {
+                int y = (int)((-1 + Math.Sqrt(1 + 8 * i)) / 2);
+                int x = i - (y * (y + 1)) / 2;
 
                 var entityX = Entities[x];
                 var entityY = Entities[y];
@@ -81,8 +81,9 @@ namespace Graveyard_Escape_Lib.Types
 
                 collisionResults[i] = new CollisionResult { Entity1 = x, Entity2 = y, Near = near, Collided = collided, Distance = distance, CollisionPoint = collisionPoint };
 
-                if (collided){
-
+                if (collided)
+                {
+                    // Handle collision
                 }
             });
         }
