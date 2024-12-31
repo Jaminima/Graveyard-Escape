@@ -81,7 +81,7 @@ namespace Graveyard_Escape_Lib.Types
                 var entityX = Entities[x];
                 var entityY = Entities[y];
 
-                bool near = entityX.IsNear(entityY, 10, out float distance);
+                bool near = entityX.IsNear(entityY, 50, out float distance);
 
                 if (!near || distance > 1.0f)
                 {
@@ -111,28 +111,28 @@ namespace Graveyard_Escape_Lib.Types
                     Vector2 normal = Vector2.Normalize(entityX.Position - entityY.Position);
                     Vector2 relativeVelocity = entityX.Velocity - entityY.Velocity;
 
-                    // float relativeSpeed = Math.Abs(Vector2.Dot(relativeVelocity, normal));
-                    // if (relativeSpeed < 0.005f)
-                    // {
-                    //     Vector2 relativeMomentum = entityX.Velocity / entityX.Mass + entityY.Velocity / entityY.Mass;
-                    //     relativeMomentum /= 2;
+                    float relativeSpeed = Math.Abs(Vector2.Dot(relativeVelocity, normal));
+                    if (relativeSpeed < 0.001f)
+                    {
+                        Vector2 relativeMomentum = entityX.Velocity / entityX.Mass + entityY.Velocity / entityY.Mass;
+                        relativeMomentum /= 2;
 
-                    //     entityX.Scale = (float)Math.Sqrt(entityX.Scale * entityX.Scale + entityY.Scale * entityY.Scale);
-                    //     entityX.Mass = entityX.Mass + entityY.Mass;
-                    //     entityX.SpinSpeed = (entityX.SpinSpeed + entityY.SpinSpeed) / 2;
-                    //     entityX.Colour = entityX.Colour + entityY.Colour / 2;
-                    //     entityX.Velocity = relativeMomentum * entityX.Mass / (entityX.Mass + entityY.Mass);
+                        entityX.Scale = (float)Math.Sqrt(entityX.Scale * entityX.Scale + entityY.Scale * entityY.Scale);
+                        entityX.Mass = entityX.Mass + entityY.Mass;
+                        entityX.SpinSpeed = (entityX.SpinSpeed + entityY.SpinSpeed) / 2;
+                        entityX.Colour = entityX.Colour + entityY.Colour / 2;
+                        entityX.Velocity = relativeMomentum * entityX.Mass / (entityX.Mass + entityY.Mass);
 
-                    //     entityY.MarkedForDeletion = true;
-                    //     return;
-                    // }
+                        entityY.MarkedForDeletion = true;
+                        return;
+                    }
 
                     float velocityAlongNormal = Vector2.Dot(relativeVelocity, normal);
 
                     if (velocityAlongNormal > 0)
                         return;
 
-                    float restitution = 0.1f; // Perfectly elastic collision
+                    float restitution = 0.5f; // Perfectly elastic collision
                     float impulseScalar = -(1 + restitution) * velocityAlongNormal;
                     impulseScalar /= 1 / entityX.Mass + 1 / entityY.Mass;
 
@@ -165,7 +165,7 @@ namespace Graveyard_Escape_Lib.Types
 
                     Vector2 direction = entityY.Position - entityX.Position;
                     float distanceSquared = direction.LengthSquared();
-                    float gravitationalConstant = 0.001f;
+                    float gravitationalConstant = 0.0001f;
                     float relativeSize = entityX.Scale / entityY.Scale;
                     Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
                     entityX.Velocity += gravitationalForce * dtime * relativeSize;
@@ -191,6 +191,16 @@ namespace Graveyard_Escape_Lib.Types
 
                 entity.Velocity *= 0.9999f;
             });
+
+            for (int i = 0; i < Entities.Count; i++)
+            {
+                var entity = Entities[i];
+                if (entity.MarkedForDeletion)
+                {
+                    Entities.RemoveAt(i);
+                    i--;
+                }
+            }
         }
 
             // for (int i = 0;i< Entities.Count; i++)
