@@ -66,6 +66,11 @@ namespace Graveyard_Escape_Lib.Types
                 int y = (int)((-1 + Math.Sqrt(1 + 8 * i)) / 2);
                 int x = i - (y * (y + 1)) / 2;
 
+                if (x == y)
+                {
+                    return;
+                }
+
                 var entityX = Entities[x];
                 var entityY = Entities[y];
 
