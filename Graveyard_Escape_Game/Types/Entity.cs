@@ -80,8 +80,8 @@ namespace Graveyard_Escape_Lib.Types
 
         public bool IsNear(Entity<T> other, float maxDistance, out float distance)
         {
-            distance = Vector2.Distance(Position, other.Position);
-            return distance < maxDistance * Scale;
+            distance = Vector2.Distance(Position, other.Position) / Scale;
+            return distance < maxDistance;
         }
 
         public bool CollidesWith(Entity<T> other, out Vector2 collisionPoint)

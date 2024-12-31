@@ -81,7 +81,7 @@ namespace Graveyard_Escape_Lib.Types
                 var entityX = Entities[x];
                 var entityY = Entities[y];
 
-                bool near = entityX.IsNear(entityY, 20, out float distance);
+                bool near = entityX.IsNear(entityY, 10, out float distance);
 
                 if (!near || distance > 1.0f)
                 {
@@ -134,7 +134,7 @@ namespace Graveyard_Escape_Lib.Types
                     if (velocityAlongNormal > 0)
                         return;
 
-                    float restitution = 0.5f; // Perfectly elastic collision
+                    float restitution = 0.1f; // Perfectly elastic collision
                     float impulseScalar = -(1 + restitution) * velocityAlongNormal;
                     impulseScalar /= 1 / entityX.Mass + 1 / entityY.Mass;
 
@@ -181,15 +181,15 @@ namespace Graveyard_Escape_Lib.Types
                 entity.Position += entity.Velocity * dtime;
                 entity.Rotation += entity.SpinSpeed * dtime;
 
-                if (entity.Position.X > 1.0f || entity.Position.X < -1.0f)
-                {
-                    entity.Velocity = new Vector2(-entity.Velocity.X, entity.Velocity.Y) / 2.0f;
-                }
+                // if (entity.Position.X > 1.0f || entity.Position.X < -1.0f)
+                // {
+                //     entity.Velocity = new Vector2(-entity.Velocity.X, entity.Velocity.Y) / 2.0f;
+                // }
 
-                if (entity.Position.Y > 1.0f || entity.Position.Y < -1.0f)
-                {
-                    entity.Velocity = new Vector2(entity.Velocity.X, -entity.Velocity.Y) / 2.0f;
-                }
+                // if (entity.Position.Y > 1.0f || entity.Position.Y < -1.0f)
+                // {
+                //     entity.Velocity = new Vector2(entity.Velocity.X, -entity.Velocity.Y) / 2.0f;
+                // }
 
                 entity.Velocity *= 0.9999f;
             });
