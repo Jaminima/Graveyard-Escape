@@ -74,7 +74,7 @@ namespace Graveyard_Escape_Lib.Types
                 var entityX = Entities[x];
                 var entityY = Entities[y];
 
-                bool near = entityX.IsNear(entityY, 50, out float distance);
+                bool near = entityX.IsNear(entityY, 10, out float distance);
 
                 if (!near || distance > 1.0f)
                 {
@@ -87,31 +87,47 @@ namespace Graveyard_Escape_Lib.Types
                 collisionResults[i] = new CollisionResult { Entity1 = x, Entity2 = y, Near = near, Collided = collided, Distance = distance, CollisionPoint = collisionPoint };
             });
 
+            Parallel.For(0, totalCollisions, i => {
+                var collisionResult = collisionResults[i];
+
+                if (collisionResult == null)
+                {
+                    return;
+                }
+
+                var entityX = Entities[collisionResult.Entity1];
+                var entityY = Entities[collisionResult.Entity2];
+
+                if (collisionResult.Near){
+                    // Apply gravitational pull
+
+                    Vector2 direction = entityY.Position - entityX.Position;
+                    float distanceSquared = direction.LengthSquared();
+                    float gravitationalConstant = 0.001f;
+                    float relativeSize = entityX.Scale / entityY.Scale;
+                    Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
+                    entityX.Velocity += gravitationalForce * dtime * relativeSize;
+                    entityY.Velocity -= gravitationalForce * dtime * relativeSize;
+                }
+            });
+
             Parallel.For(0, Entities.Count, i => {
                 var entity = Entities[i];
 
-                for (int j = 0; j < totalCollisions; j++)
+                entity.Position += entity.Velocity * dtime;
+                entity.Rotation += entity.SpinSpeed * dtime;
+
+                if (entity.Position.X > 1.0f || entity.Position.X < -1.0f)
                 {
-                    var collisionResult = collisionResults[j];
-
-                    if (collisionResult != null && (collisionResult.Entity1 == i || collisionResult.Entity2 == i))
-                    {
-                        if (collisionResult.Near)
-                        {
-                            var otherEntity = Entities[collisionResult.Entity1 == i ? collisionResult.Entity2 : collisionResult.Entity1];
-
-                            // Apply gravitational pull
-                            Vector2 direction = otherEntity.Position - entity.Position;
-                            float distanceSquared = direction.LengthSquared();
-                            float gravitationalConstant = 0.0001f;
-                            float relativeSize = entity.Scale / otherEntity.Scale;
-                            Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
-                            entity.Velocity += gravitationalForce * dtime * relativeSize;
-                        }
-                    }
+                    entity.Velocity = new Vector2(-entity.Velocity.X, entity.Velocity.Y) / 2;
                 }
 
-                entity.Position += entity.Velocity * dtime;
+                if (entity.Position.Y > 1.0f || entity.Position.Y < -1.0f)
+                {
+                    entity.Velocity = new Vector2(entity.Velocity.X, -entity.Velocity.Y) / 2;
+                }
+
+                entity.Velocity *= 0.9999f;
             });
         }
 
