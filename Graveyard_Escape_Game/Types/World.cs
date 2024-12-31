@@ -74,9 +74,9 @@ namespace Graveyard_Escape_Lib.Types
                 var entityX = Entities[x];
                 var entityY = Entities[y];
 
-                bool near = entityX.IsNear(entityY, 1, out float distance);
+                bool near = entityX.IsNear(entityY, 50, out float distance);
 
-                if (!near)
+                if (!near || distance > 1.0f)
                 {
                     collisionResults[i] = new CollisionResult { Entity1 = x, Entity2 = y, Near = near, Collided = false, Distance = distance, CollisionPoint = Vector2.Zero };
                     return;
@@ -85,11 +85,33 @@ namespace Graveyard_Escape_Lib.Types
                 bool collided = entityX.CollidesWith(entityY, out Vector2 collisionPoint);
 
                 collisionResults[i] = new CollisionResult { Entity1 = x, Entity2 = y, Near = near, Collided = collided, Distance = distance, CollisionPoint = collisionPoint };
+            });
 
-                if (collided)
+            Parallel.For(0, Entities.Count, i => {
+                var entity = Entities[i];
+
+                for (int j = 0; j < totalCollisions; j++)
                 {
-                    // Handle collision
+                    var collisionResult = collisionResults[j];
+
+                    if (collisionResult != null && (collisionResult.Entity1 == i || collisionResult.Entity2 == i))
+                    {
+                        if (collisionResult.Near)
+                        {
+                            var otherEntity = Entities[collisionResult.Entity1 == i ? collisionResult.Entity2 : collisionResult.Entity1];
+
+                            // Apply gravitational pull
+                            Vector2 direction = otherEntity.Position - entity.Position;
+                            float distanceSquared = direction.LengthSquared();
+                            float gravitationalConstant = 0.0001f;
+                            float relativeSize = entity.Scale / otherEntity.Scale;
+                            Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
+                            entity.Velocity += gravitationalForce * dtime * relativeSize;
+                        }
+                    }
                 }
+
+                entity.Position += entity.Velocity * dtime;
             });
         }
 
