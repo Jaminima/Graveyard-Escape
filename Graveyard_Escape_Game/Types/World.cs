@@ -62,6 +62,13 @@ namespace Graveyard_Escape_Lib.Types
             int totalCollisions = ((Entities.Count * Entities.Count) / 2) - Entities.Count; 
             CollisionResult[] collisionResults = new CollisionResult[totalCollisions];
 
+            for (int i = 0; i<Entities.Count; i++)
+            {
+                var entity = Entities[i];
+                entity.LastCollidedWith = entity.HasCollidedWith;
+                entity.HasCollidedWith.Clear();
+            }
+
             Parallel.For(0, totalCollisions, i => {
                 int y = (int)((-1 + Math.Sqrt(1 + 8 * i)) / 2);
                 int x = i - (y * (y + 1)) / 2;
@@ -97,6 +104,61 @@ namespace Graveyard_Escape_Lib.Types
 
                 var entityX = Entities[collisionResult.Entity1];
                 var entityY = Entities[collisionResult.Entity2];
+
+
+                if (collisionResult.Collided && !entityX.LastCollidedWith.Contains(entityY.Id) && !entityY.LastCollidedWith.Contains(entityX.Id)){
+                    // Calculate the bounce
+                    Vector2 normal = Vector2.Normalize(entityX.Position - entityY.Position);
+                    Vector2 relativeVelocity = entityX.Velocity - entityY.Velocity;
+
+                    // float relativeSpeed = Math.Abs(Vector2.Dot(relativeVelocity, normal));
+                    // if (relativeSpeed < 0.005f)
+                    // {
+                    //     Vector2 relativeMomentum = entityX.Velocity / entityX.Mass + entityY.Velocity / entityY.Mass;
+                    //     relativeMomentum /= 2;
+
+                    //     entityX.Scale = (float)Math.Sqrt(entityX.Scale * entityX.Scale + entityY.Scale * entityY.Scale);
+                    //     entityX.Mass = entityX.Mass + entityY.Mass;
+                    //     entityX.SpinSpeed = (entityX.SpinSpeed + entityY.SpinSpeed) / 2;
+                    //     entityX.Colour = entityX.Colour + entityY.Colour / 2;
+                    //     entityX.Velocity = relativeMomentum * entityX.Mass / (entityX.Mass + entityY.Mass);
+
+                    //     entityY.MarkedForDeletion = true;
+                    //     return;
+                    // }
+
+                    float velocityAlongNormal = Vector2.Dot(relativeVelocity, normal);
+
+                    if (velocityAlongNormal > 0)
+                        return;
+
+                    float restitution = 0.1f; // Perfectly elastic collision
+                    float impulseScalar = -(1 + restitution) * velocityAlongNormal;
+                    impulseScalar /= 1 / entityX.Mass + 1 / entityY.Mass;
+
+                    Vector2 impulse = impulseScalar * normal;
+
+                    // Apply impulse based on relative positions
+                    var angleBetween = Vector2.Dot(entityX.Position - entityY.Position, impulse);
+                    if (angleBetween > Math.PI / 2)
+                    {
+                        entityX.Velocity -= impulse / entityX.Mass;
+                        entityY.Velocity += impulse / entityY.Mass;
+                    }
+                    else
+                    {
+                        entityX.Velocity += impulse / entityX.Mass;
+                        entityY.Velocity -= impulse / entityY.Mass;
+                    }
+
+                    // Calculate the effect of SpinSpeed
+                    float spinEffect = (entityX.SpinSpeed - entityY.SpinSpeed) * 0.1f;
+                    entityX.Velocity += new Vector2(-normal.Y, normal.X) * spinEffect;
+                    entityY.Velocity -= new Vector2(-normal.Y, normal.X) * spinEffect;
+
+                    entityX.HasCollidedWith.Add(entityY.Id);
+                    entityY.HasCollidedWith.Add(entityX.Id);
+                }
 
                 if (collisionResult.Near){
                     // Apply gravitational pull
