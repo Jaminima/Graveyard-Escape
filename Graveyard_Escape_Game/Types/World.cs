@@ -47,24 +47,45 @@ namespace Graveyard_Escape_Lib.Types
             }
         }
 
+        class CollisionResult
+        {
+            public int Entity1 { get; set; }
+            public int Entity2 { get; set; }
+            public bool Near { get; set; }
+            public float Distance { get; set; }
+            public bool Collided { get; set; }
+            public Vector2 CollisionPoint { get; set; }
+        }
+
         public void Update(float dtime)
         {
-            bool[][] collisionMatrix = new bool[Entities.Count][];
-            Parallel.For(0, Entities.Count, i =>
-            {
-                collisionMatrix[i] = new bool[Entities.Count - i - 1];
-                
-                for (int j = 0; j < collisionMatrix[i].Length; j++)
-                {
-                    bool near = Entities[i].IsNear(Entities[j + i + 1], 1, out float distance);
-                    if (!near)
-                    {
-                        continue;
-                    }
+            int totalCollisions = Entities.Count * Entities.Count; 
+            CollisionResult[] collisionResults = new CollisionResult[totalCollisions];
 
-                    collisionMatrix[i][j] = Entities[i].CollidesWith(Entities[j + i + 1], out Vector2 collisionPoint);
+            Parallel.For(0, totalCollisions, i =>{
+                int y = i / Entities.Count;
+                int x = i % Entities.Count;
+
+                var entityX = Entities[x];
+                var entityY = Entities[y];
+
+                bool near = entityX.IsNear(entityY, 1, out float distance);
+
+                if (!near)
+                {
+                    collisionResults[i] = new CollisionResult { Entity1 = x, Entity2 = y, Near = near, Collided = false, Distance = distance, CollisionPoint = Vector2.Zero };
+                    return;
+                }
+
+                bool collided = entityX.CollidesWith(entityY, out Vector2 collisionPoint);
+
+                collisionResults[i] = new CollisionResult { Entity1 = x, Entity2 = y, Near = near, Collided = collided, Distance = distance, CollisionPoint = collisionPoint };
+
+                if (collided){
+
                 }
             });
+        }
 
             // for (int i = 0;i< Entities.Count; i++)
             // {
@@ -183,6 +204,6 @@ namespace Graveyard_Escape_Lib.Types
 
             //     entity.Velocity *= 0.9999f;
             // }
-        }
+        //}
     }
 }
