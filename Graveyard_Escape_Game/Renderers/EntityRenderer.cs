@@ -66,7 +66,7 @@ namespace Graveyard_Escape_Game.Renderers
 
             // Set the entity position and scale uniforms
             GL.Uniform2(_entityPositionLocation, entity.Position.X, entity.Position.Y);
-            GL.Uniform1(_entityScaleLocation, entity.Scale);
+            GL.Uniform1(_entityScaleLocation, entity.Radius);
 
             // Set the entity rotation uniform
             GL.Uniform1(_entityRotationLocation, entity.Rotation);
