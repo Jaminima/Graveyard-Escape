@@ -43,7 +43,7 @@ namespace Graveyard_Escape_Lib.Types
 
                 float SpinSpeed = (float)random.NextDouble() * 1.0f - 0.50f;
 
-                Entities.Add(new Entity<EntityRenderer>(entityVertexData) { Id = i, Position = new System.Numerics.Vector2(x, y), Scale=0.005f, SpinSpeed = SpinSpeed, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
+                Entities.Add(new Entity<EntityRenderer>(entityVertexData) { Id = i, Position = new System.Numerics.Vector2(x, y), Scale=0.01f, SpinSpeed = SpinSpeed, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
             }
         }
 
@@ -81,7 +81,7 @@ namespace Graveyard_Escape_Lib.Types
                 var entityX = Entities[x];
                 var entityY = Entities[y];
 
-                bool near = entityX.IsNear(entityY, 10, out float distance);
+                bool near = entityX.IsNear(entityY, 50, out float distance);
 
                 if (!near || distance > 1.0f)
                 {
@@ -114,7 +114,7 @@ namespace Graveyard_Escape_Lib.Types
                     Vector2 relativeVelocity = entityX.Velocity - entityY.Velocity;
 
                     float relativeSpeed = Math.Abs(Vector2.Dot(relativeVelocity, normal));
-                    if (relativeSpeed < 0.001f)
+                    if (relativeSpeed < 0.0001f)
                     {
                         Vector2 relativeMomentum = entityX.Velocity / entityX.Mass + entityY.Velocity / entityY.Mass;
                         relativeMomentum /= 2;
@@ -170,8 +170,8 @@ namespace Graveyard_Escape_Lib.Types
                     float gravitationalConstant = 0.0001f;
                     float relativeSize = 1 / (entityY.Scale + entityX.Scale);
                     Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
-                    entityX.Velocity += gravitationalForce * dtime * entityX.Scale * relativeSize;
-                    entityY.Velocity -= gravitationalForce * dtime * entityY.Scale * relativeSize;
+                    entityX.Velocity += gravitationalForce * (dtime * entityX.Scale * relativeSize);
+                    entityY.Velocity -= gravitationalForce * (dtime * entityY.Scale * relativeSize);
                 }
             });
 
@@ -191,7 +191,7 @@ namespace Graveyard_Escape_Lib.Types
                 //     entity.Velocity = new Vector2(entity.Velocity.X, -entity.Velocity.Y) / 2.0f;
                 // }
 
-                entity.Velocity *= 0.9999f;
+                entity.Velocity *= 0.999f;
             });
 
             for (int i = 0; i < Entities.Count; i++)
