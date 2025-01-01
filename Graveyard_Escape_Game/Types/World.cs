@@ -78,17 +78,10 @@ namespace Graveyard_Escape_Lib.Types
                 var entityX = Entities[x];
                 var entityY = Entities[y];
 
-                bool near = entityX.IsNear(entityY, 50, out float distance);
+                bool collided = entityX.CollidesWith(entityY, out float collisionDistance);
+                bool near = collisionDistance < 10.0f;
 
-                if (!near || distance > 1.0f)
-                {
-                    collisionResults[i] = new CollisionResult { Entity1 = x, Entity2 = y, Near = near, Collided = false, Distance = distance };
-                    return;
-                }
-
-                bool collided = entityX.CollidesWith(entityY);
-
-                collisionResults[i] = new CollisionResult { Entity1 = x, Entity2 = y, Near = near, Collided = collided, Distance = distance };
+                collisionResults[i] = new CollisionResult { Entity1 = x, Entity2 = y, Near = near, Collided = collided, Distance = collisionDistance };
             });
 
             var nearHits = collisionResults.Where(c => c != null && c.Near).ToList();
@@ -105,7 +98,7 @@ namespace Graveyard_Escape_Lib.Types
                 var entityY = Entities[collisionResult.Entity2];
 
 
-                if (collisionResult.Collided && !entityX.LastCollidedWith.Contains(entityY.Id) && !entityY.LastCollidedWith.Contains(entityX.Id)){
+                if (collisionResult.Collided /*&& !entityX.LastCollidedWith.Contains(entityY.Id) && !entityY.LastCollidedWith.Contains(entityX.Id)*/){
                     // Calculate the bounce
                     Vector2 normal = Vector2.Normalize(entityX.Position - entityY.Position);
                     Vector2 relativeVelocity = entityX.Velocity - entityY.Velocity;
@@ -164,7 +157,7 @@ namespace Graveyard_Escape_Lib.Types
 
                     Vector2 direction = entityY.Position - entityX.Position;
                     float distanceSquared = direction.LengthSquared();
-                    float gravitationalConstant = 0.0001f;
+                    float gravitationalConstant = 0.001f;
                     float relativeSize = 1 / (entityY.Radius + entityX.Radius);
                     Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
                     entityX.Velocity += gravitationalForce * (dtime * entityX.Radius * relativeSize);
@@ -187,7 +180,7 @@ namespace Graveyard_Escape_Lib.Types
                 //     entity.Velocity = new Vector2(entity.Velocity.X, -entity.Velocity.Y) / 2.0f;
                 // }
 
-                entity.Velocity *= 0.999f;
+                //entity.Velocity *= 0.9999f;
             });
 
             for (int i = 0; i < Entities.Count; i++)
