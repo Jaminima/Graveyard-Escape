@@ -20,11 +20,21 @@ namespace Graveyard_Escape_Lib.Types
         public float Mass { get; set; } = 1.0f;
         public Vector4 Colour { get; set; } = new Vector4(1.0f, 1.0f, 1.0f, 1.0f);
         public bool MarkedForDeletion { get; set; } = false;
+        public float[] VertexData { get; set; }
 
 
         public Entity()
         {
             _Renderer = new T();
+            this.VertexData = new float[]
+            {
+                -1.0f, -1.0f, 0.0f, 1.0f,
+                1.0f, -1.0f, 0.0f, 1.0f,
+                1.0f, 1.0f, 0.0f, 1.0f,
+                1.0f, 1.0f, 0.0f, 1.0f,
+                -1.0f, 1.0f, 0.0f, 1.0f,
+                -1.0f, -1.0f, 0.0f, 1.0f
+            };
         }
 
         public void Init(){

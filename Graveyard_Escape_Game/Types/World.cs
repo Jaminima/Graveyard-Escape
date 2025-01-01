@@ -19,7 +19,7 @@ namespace Graveyard_Escape_Lib.Types
             Entities = new List<Entity<EntityRenderer>>();
 
             // Add some entities
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 100; i++)
             {
                 float x = (float)random.NextDouble() * 2.0f - 1.0f;
                 x/=3;
@@ -52,7 +52,6 @@ namespace Graveyard_Escape_Lib.Types
             public bool Near { get; set; }
             public float Distance { get; set; }
             public bool Collided { get; set; }
-            public Vector2 CollisionPoint { get; set; }
         }
 
         public void Update(float dtime)
@@ -83,13 +82,13 @@ namespace Graveyard_Escape_Lib.Types
 
                 if (!near || distance > 1.0f)
                 {
-                    collisionResults[i] = new CollisionResult { Entity1 = x, Entity2 = y, Near = near, Collided = false, Distance = distance, CollisionPoint = Vector2.Zero };
+                    collisionResults[i] = new CollisionResult { Entity1 = x, Entity2 = y, Near = near, Collided = false, Distance = distance };
                     return;
                 }
 
-                bool collided = entityX.CollidesWith(entityY, out Vector2 collisionPoint);
+                bool collided = entityX.CollidesWith(entityY);
 
-                collisionResults[i] = new CollisionResult { Entity1 = x, Entity2 = y, Near = near, Collided = collided, Distance = distance, CollisionPoint = collisionPoint };
+                collisionResults[i] = new CollisionResult { Entity1 = x, Entity2 = y, Near = near, Collided = collided, Distance = distance };
             });
 
             var nearHits = collisionResults.Where(c => c != null && c.Near).ToList();
@@ -177,7 +176,6 @@ namespace Graveyard_Escape_Lib.Types
                 var entity = Entities[i];
 
                 entity.Position += entity.Velocity * dtime;
-                entity.Rotation += entity.SpinSpeed * dtime;
 
                 // if (entity.Position.X > 1.0f || entity.Position.X < -1.0f)
                 // {
