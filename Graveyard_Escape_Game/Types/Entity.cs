@@ -26,14 +26,24 @@ namespace Graveyard_Escape_Lib.Types
         public Entity()
         {
             _Renderer = new T();
+            // Diamond composing of 4 triangles
             this.VertexData = new float[]
             {
-                -1.0f, -1.0f, 0.0f, 1.0f,
-                1.0f, -1.0f, 0.0f, 1.0f,
-                1.0f, 1.0f, 0.0f, 1.0f,
-                1.0f, 1.0f, 0.0f, 1.0f,
-                -1.0f, 1.0f, 0.0f, 1.0f,
-                -1.0f, -1.0f, 0.0f, 1.0f
+                0.0f, 1.0f, 0.0f, 1.0f,
+                1.0f, 0.0f, 0.0f, 1.0f,
+                0.0f, -1.0f, 0.0f, 1.0f,
+
+                0.0f, -1.0f, 0.0f, 1.0f,
+                -1.0f, 0.0f, 0.0f, 1.0f,
+                0.0f, 1.0f, 0.0f, 1.0f,
+
+                -1.0f, 0.0f, 0.0f, 1.0f,
+                0.0f, 1.0f, 0.0f, 1.0f,
+                1.0f, 0.0f, 0.0f, 1.0f,
+
+                0.0f, -1.0f, 0.0f, 1.0f,
+                1.0f, 0.0f, 0.0f, 1.0f,
+                -1.0f, 0.0f, 0.0f, 1.0f,
             };
         }
 
