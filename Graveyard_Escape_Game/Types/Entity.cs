@@ -85,9 +85,9 @@ namespace Graveyard_Escape_Lib.Types
             Radius = newScale;
         }
 
-        public void Render()
+        public void Render(Vector2 cameraPosition)
         {
-            _Renderer.RenderGL(this);
+            _Renderer.RenderGL(this,cameraPosition);
         }
 
         public void Unload(){

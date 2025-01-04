@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using Graveyard_Escape_Lib.Types;
 using OpenTK.Graphics.OpenGL;
@@ -55,7 +56,7 @@ namespace Graveyard_Escape_Game.Renderers
             _entityColourLocation = GL.GetUniformLocation(_shaderProgram, "entityColour");
         }
 
-        public void RenderGL<T>(Entity<T> entity) where T : Renderer, new()
+        public void RenderGL<T>(Entity<T> entity, Vector2 cameraPosition) where T : Renderer, new()
         {
             // Bind and use shader program
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
@@ -63,7 +64,8 @@ namespace Graveyard_Escape_Game.Renderers
             GL.UseProgram(_shaderProgram);
 
             // Set the entity position and scale uniforms
-            GL.Uniform2(_entityPositionLocation, entity.Position.X, entity.Position.Y);
+            Vector2 scenePosition = entity.Position - cameraPosition;
+            GL.Uniform2(_entityPositionLocation, scenePosition.X, scenePosition.Y);
             GL.Uniform1(_entityScaleLocation, entity.Radius);
 
             // Set the entity colour uniform

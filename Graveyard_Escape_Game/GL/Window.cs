@@ -1,3 +1,4 @@
+using System.Numerics;
 using Graveyard_Escape_Lib.Types;
 using OpenTK;
 using OpenTK.Graphics;
@@ -19,6 +20,7 @@ namespace Graveyard_Escape_Game
         //FPS counter
         private double _time = 0;
         private int _frames = 0;
+        private System.Numerics.Vector2 _cameraPosition = new System.Numerics.Vector2(0, 0f);
 
         public Window(int width, int height, string title): base(new GameWindowSettings(), new NativeWindowSettings() { ClientSize = new Vector2i(width, height), Title = title,   })
         {
@@ -74,7 +76,7 @@ namespace Graveyard_Escape_Game
             // Render entities
             foreach (var entity in _world.Entities)
             {
-                entity.Render();
+                entity.Render(_cameraPosition);
             }
 
             SwapBuffers();
