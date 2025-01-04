@@ -59,12 +59,18 @@ namespace Graveyard_Escape_Lib.Types
             int totalCollisions = ((Entities.Count * Entities.Count) / 2) - Entities.Count; 
             CollisionResult[] collisionResults = new CollisionResult[totalCollisions];
 
+            Vector2 averageMassVector = new Vector2(0, 0);
+
             for (int i = 0; i<Entities.Count; i++)
             {
                 var entity = Entities[i];
                 entity.LastCollidedWith = entity.HasCollidedWith;
                 entity.HasCollidedWith.Clear();
+
+                averageMassVector += entity.Position * entity.Mass;
             }
+            
+            averageMassVector /= Entities.Count;
 
             Parallel.For(0, totalCollisions, i => {
                 int y = (int)((-1 + Math.Sqrt(1 + 8 * i)) / 2);
@@ -79,15 +85,23 @@ namespace Graveyard_Escape_Lib.Types
                 var entityY = Entities[y];
 
                 bool collided = entityX.CollidesWith(entityY, out float collisionDistance);
-                bool near = collisionDistance < 10.0f;
+                float gravityDistance =collisionDistance / (entityX.Mass + entityY.Mass);
+                bool near = collisionDistance < 1.0f;
+
+                Vector2 direction = entityY.Position - entityX.Position;
+                float distanceSquared = direction.LengthSquared();
+                float gravitationalConstant = 0.0001f;
+                float relativeSize = 1 / (entityY.Radius + entityX.Radius);
+                Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
+                entityX.Velocity += gravitationalForce * (dtime * entityX.Radius * relativeSize);
+                entityY.Velocity -= gravitationalForce * (dtime * entityY.Radius * relativeSize);
 
                 collisionResults[i] = new CollisionResult { Entity1 = x, Entity2 = y, Near = near, Collided = collided, Distance = collisionDistance };
             });
 
-            var nearHits = collisionResults.Where(c => c != null && c.Near).ToList();
-
-            Parallel.For(0, nearHits.Count, i => {
-                var collisionResult = nearHits[i];
+            var collisons = collisionResults.Where(c => c != null && c.Collided).ToList();
+            Parallel.For(0, collisons.Count, i => {
+                var collisionResult = collisons[i];
 
                 if (collisionResult == null)
                 {
@@ -152,17 +166,17 @@ namespace Graveyard_Escape_Lib.Types
                     entityY.HasCollidedWith.Add(entityX.Id);
                 }
 
-                if (collisionResult.Near){
-                    // Apply gravitational pull
+                // if (collisionResult.Near){
+                //     // Apply gravitational pull
 
-                    Vector2 direction = entityY.Position - entityX.Position;
-                    float distanceSquared = direction.LengthSquared();
-                    float gravitationalConstant = 0.0001f;
-                    float relativeSize = 1 / (entityY.Radius + entityX.Radius);
-                    Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
-                    entityX.Velocity += gravitationalForce * (dtime * entityX.Radius * relativeSize);
-                    entityY.Velocity -= gravitationalForce * (dtime * entityY.Radius * relativeSize);
-                }
+                //     Vector2 direction = entityY.Position - entityX.Position;
+                //     float distanceSquared = direction.LengthSquared();
+                //     float gravitationalConstant = 0.0001f;
+                //     float relativeSize = 1 / (entityY.Radius + entityX.Radius);
+                //     Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
+                //     entityX.Velocity += gravitationalForce * (dtime * entityX.Radius * relativeSize);
+                //     entityY.Velocity -= gravitationalForce * (dtime * entityY.Radius * relativeSize);
+                // }
             });
 
             Parallel.For(0, Entities.Count, i => {
