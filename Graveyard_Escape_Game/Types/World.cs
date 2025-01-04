@@ -19,21 +19,21 @@ namespace Graveyard_Escape_Lib.Types
             Entities = new List<Entity<EntityRenderer>>();
 
             // Add some entities
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 1000; i++)
             {
                 float x = (float)random.NextDouble() * 2.0f - 1.0f;
-                x/=3;
+                x/=2;
                 
                 float y = (float)random.NextDouble() * 2.0f - 1.0f;
-                y/=3;
+                y/=2;
 
                 float vx = (float)random.NextDouble() * 0.02f - 0.01f;
                 float vy = (float)random.NextDouble() * 0.02f - 0.01f;
 
-                if (random.Next(0, 10) > 8){
-                    vx *= 10;
-                    vy *= 10;
-                }
+                // if (random.Next(0, 10) > 8){
+                //     vx *= 10;
+                //     vy *= 10;
+                // }
 
                 float r = random.Next(0, 255) / 255.0f;
                 float g = random.Next(0, 255) / 255.0f;
@@ -41,7 +41,7 @@ namespace Graveyard_Escape_Lib.Types
 
                 float SpinSpeed = (float)random.NextDouble() * 1.0f - 0.50f;
 
-                Entities.Add(new Entity<EntityRenderer>() { Id = i, Position = new System.Numerics.Vector2(x, y), Radius=0.01f, SpinSpeed = SpinSpeed, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
+                Entities.Add(new Entity<EntityRenderer>() { Id = i, Position = new System.Numerics.Vector2(x, y), Radius=0.005f, SpinSpeed = SpinSpeed, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
             }
         }
 
@@ -157,7 +157,7 @@ namespace Graveyard_Escape_Lib.Types
 
                     Vector2 direction = entityY.Position - entityX.Position;
                     float distanceSquared = direction.LengthSquared();
-                    float gravitationalConstant = 0.001f;
+                    float gravitationalConstant = 0.0001f;
                     float relativeSize = 1 / (entityY.Radius + entityX.Radius);
                     Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
                     entityX.Velocity += gravitationalForce * (dtime * entityX.Radius * relativeSize);
