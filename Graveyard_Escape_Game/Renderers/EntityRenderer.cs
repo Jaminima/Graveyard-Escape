@@ -69,7 +69,7 @@ namespace Graveyard_Escape_Game.Renderers
             // Set the entity colour uniform
             GL.Uniform4(_entityColourLocation, entity.Colour.X, entity.Colour.Y, entity.Colour.Z, entity.Colour.W);
 
-            GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, entity.VertexData.Length / 4);
         }
 
         public void UnloadGL()

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Numerics;
 using System.Threading.Tasks;
 
@@ -27,24 +28,47 @@ namespace Graveyard_Escape_Lib.Types
         {
             _Renderer = new T();
             // Diamond composing of 4 triangles
-            this.VertexData = new float[]
+
+            int segments = 16;
+
+            float[] EdgeData = new float[segments * 2];
+
+            for (int i = 0; i < segments; i++)
             {
-                0.0f, 1.0f, 0.0f, 1.0f,
-                1.0f, 0.0f, 0.0f, 1.0f,
-                0.0f, -1.0f, 0.0f, 1.0f,
+                float angle = (float)(2.0f * Math.PI / segments) * i;
 
-                0.0f, -1.0f, 0.0f, 1.0f,
-                -1.0f, 0.0f, 0.0f, 1.0f,
-                0.0f, 1.0f, 0.0f, 1.0f,
+                float x = (float)Math.Cos(angle);
+                float y = (float)Math.Sin(angle);
 
-                -1.0f, 0.0f, 0.0f, 1.0f,
-                0.0f, 1.0f, 0.0f, 1.0f,
-                1.0f, 0.0f, 0.0f, 1.0f,
+                EdgeData[i * 2] = x;
+                EdgeData[i * 2 + 1] = y;
+            }
 
-                0.0f, -1.0f, 0.0f, 1.0f,
-                1.0f, 0.0f, 0.0f, 1.0f,
-                -1.0f, 0.0f, 0.0f, 1.0f,
-            };
+            int vertexTriangleSize = 3 * 4;
+            this.VertexData = new float[segments * vertexTriangleSize];
+
+            for (int i = 0; i < segments; i++)
+            {
+                int next = (i + 1) % segments;
+
+                int vi = i * vertexTriangleSize;
+
+                this.VertexData[vi] = EdgeData[i * 2];
+                this.VertexData[vi + 1] = EdgeData[i * 2 + 1];
+                this.VertexData[vi + 2] = 0.0f;
+                this.VertexData[vi + 3] = 1.0f;
+
+                this.VertexData[vi + 4] = EdgeData[next * 2];
+                this.VertexData[vi + 5] = EdgeData[next * 2 + 1];
+                this.VertexData[vi + 6] = 0.0f;
+                this.VertexData[vi + 7] = 1.0f;
+
+                this.VertexData[vi + 8] = 0.0f;
+                this.VertexData[vi + 9] = 0.0f;
+                this.VertexData[vi + 10] = 0.0f;
+                this.VertexData[vi + 11] = 1.0f;
+            }
+
         }
 
         public void Init(){
