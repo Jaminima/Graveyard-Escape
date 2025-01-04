@@ -18,6 +18,7 @@ namespace Graveyard_Escape_Game.Renderers
         private int _entityPositionLocation;
         private int _entityScaleLocation;
         private int _entityColourLocation;
+        private int _sceneZoomLocation;
 
         public void InitGL<T>(Entity<T> entity) where T : Renderer, new()
         {
@@ -54,9 +55,10 @@ namespace Graveyard_Escape_Game.Renderers
             _entityPositionLocation = GL.GetUniformLocation(_shaderProgram, "entityPosition");
             _entityScaleLocation = GL.GetUniformLocation(_shaderProgram, "entityScale");
             _entityColourLocation = GL.GetUniformLocation(_shaderProgram, "entityColour");
+            _sceneZoomLocation = GL.GetUniformLocation(_shaderProgram, "sceneZoom");
         }
 
-        public void RenderGL<T>(Entity<T> entity, Vector2 cameraPosition) where T : Renderer, new()
+        public void RenderGL<T>(Entity<T> entity, Vector2 cameraPosition, float sceneZoom) where T : Renderer, new()
         {
             // Bind and use shader program
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
@@ -70,6 +72,9 @@ namespace Graveyard_Escape_Game.Renderers
 
             // Set the entity colour uniform
             GL.Uniform4(_entityColourLocation, entity.Colour.X, entity.Colour.Y, entity.Colour.Z, entity.Colour.W);
+
+            // Set the scene zoom
+            GL.Uniform1(_sceneZoomLocation, sceneZoom);
 
             GL.DrawArrays(PrimitiveType.Triangles, 0, entity.VertexData.Length / 4);
         }
