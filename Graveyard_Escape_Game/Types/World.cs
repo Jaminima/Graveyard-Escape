@@ -59,18 +59,12 @@ namespace Graveyard_Escape_Lib.Types
             int totalCollisions = ((Entities.Count * Entities.Count) / 2) - Entities.Count; 
             CollisionResult[] collisionResults = new CollisionResult[totalCollisions];
 
-            Vector2 averageMassVector = new Vector2(0, 0);
-
             for (int i = 0; i<Entities.Count; i++)
             {
                 var entity = Entities[i];
                 entity.LastCollidedWith = entity.HasCollidedWith;
                 entity.HasCollidedWith.Clear();
-
-                averageMassVector += entity.Position * entity.Mass;
             }
-            
-            averageMassVector /= Entities.Count;
 
             Parallel.For(0, totalCollisions, i => {
                 int y = (int)((-1 + Math.Sqrt(1 + 8 * i)) / 2);
@@ -103,80 +97,60 @@ namespace Graveyard_Escape_Lib.Types
             Parallel.For(0, collisons.Count, i => {
                 var collisionResult = collisons[i];
 
-                if (collisionResult == null)
-                {
-                    return;
-                }
-
                 var entityX = Entities[collisionResult.Entity1];
                 var entityY = Entities[collisionResult.Entity2];
 
+                // Calculate the bounce
+                Vector2 normal = Vector2.Normalize(entityX.Position - entityY.Position);
+                Vector2 relativeVelocity = entityX.Velocity - entityY.Velocity;
 
-                if (collisionResult.Collided /*&& !entityX.LastCollidedWith.Contains(entityY.Id) && !entityY.LastCollidedWith.Contains(entityX.Id)*/){
-                    // Calculate the bounce
-                    Vector2 normal = Vector2.Normalize(entityX.Position - entityY.Position);
-                    Vector2 relativeVelocity = entityX.Velocity - entityY.Velocity;
+                float relativeSpeed = Math.Abs(Vector2.Dot(relativeVelocity, normal));
+                if (relativeSpeed < 0.001f)
+                {
+                    Vector2 relativeMomentum = entityX.Velocity / entityX.Mass + entityY.Velocity / entityY.Mass;
+                    relativeMomentum /= 2;
 
-                    float relativeSpeed = Math.Abs(Vector2.Dot(relativeVelocity, normal));
-                    if (relativeSpeed < 0.001f)
-                    {
-                        Vector2 relativeMomentum = entityX.Velocity / entityX.Mass + entityY.Velocity / entityY.Mass;
-                        relativeMomentum /= 2;
+                    entityX.Radius = (float)Math.Sqrt(entityX.Radius * entityX.Radius + entityY.Radius * entityY.Radius);
+                    entityX.Mass = entityX.Mass + entityY.Mass;
+                    entityX.SpinSpeed = (entityX.SpinSpeed + entityY.SpinSpeed) / 2;
+                    entityX.Colour = entityX.Colour + entityY.Colour / 2;
+                    entityX.Velocity = relativeMomentum * entityX.Mass / (entityX.Mass + entityY.Mass);
 
-                        entityX.Radius = (float)Math.Sqrt(entityX.Radius * entityX.Radius + entityY.Radius * entityY.Radius);
-                        entityX.Mass = entityX.Mass + entityY.Mass;
-                        entityX.SpinSpeed = (entityX.SpinSpeed + entityY.SpinSpeed) / 2;
-                        entityX.Colour = entityX.Colour + entityY.Colour / 2;
-                        entityX.Velocity = relativeMomentum * entityX.Mass / (entityX.Mass + entityY.Mass);
-
-                        entityY.MarkedForDeletion = true;
-                        return;
-                    }
-
-                    float velocityAlongNormal = Vector2.Dot(relativeVelocity, normal);
-
-                    if (velocityAlongNormal > 0)
-                        return;
-
-                    float restitution = 0.1f; // Perfectly elastic collision
-                    float impulseScalar = -(1 + restitution) * velocityAlongNormal;
-                    impulseScalar /= 1 / entityX.Mass + 1 / entityY.Mass;
-
-                    Vector2 impulse = impulseScalar * normal;
-
-                    // Apply impulse based on relative positions
-                    var angleBetween = Vector2.Dot(entityX.Position - entityY.Position, impulse);
-                    if (angleBetween > Math.PI / 2)
-                    {
-                        entityX.Velocity -= impulse / entityX.Mass;
-                        entityY.Velocity += impulse / entityY.Mass;
-                    }
-                    else
-                    {
-                        entityX.Velocity += impulse / entityX.Mass;
-                        entityY.Velocity -= impulse / entityY.Mass;
-                    }
-
-                    // Calculate the effect of SpinSpeed
-                    float spinEffect = (entityX.SpinSpeed - entityY.SpinSpeed) * 0.1f;
-                    entityX.Velocity += new Vector2(-normal.Y, normal.X) * spinEffect;
-                    entityY.Velocity -= new Vector2(-normal.Y, normal.X) * spinEffect;
-
-                    entityX.HasCollidedWith.Add(entityY.Id);
-                    entityY.HasCollidedWith.Add(entityX.Id);
+                    entityY.MarkedForDeletion = true;
+                    return;
                 }
 
-                // if (collisionResult.Near){
-                //     // Apply gravitational pull
+                float velocityAlongNormal = Vector2.Dot(relativeVelocity, normal);
 
-                //     Vector2 direction = entityY.Position - entityX.Position;
-                //     float distanceSquared = direction.LengthSquared();
-                //     float gravitationalConstant = 0.0001f;
-                //     float relativeSize = 1 / (entityY.Radius + entityX.Radius);
-                //     Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
-                //     entityX.Velocity += gravitationalForce * (dtime * entityX.Radius * relativeSize);
-                //     entityY.Velocity -= gravitationalForce * (dtime * entityY.Radius * relativeSize);
-                // }
+                if (velocityAlongNormal > 0)
+                    return;
+
+                float restitution = 0.1f; // Perfectly elastic collision
+                float impulseScalar = -(1 + restitution) * velocityAlongNormal;
+                impulseScalar /= 1 / entityX.Mass + 1 / entityY.Mass;
+
+                Vector2 impulse = impulseScalar * normal;
+
+                // Apply impulse based on relative positions
+                var angleBetween = Vector2.Dot(entityX.Position - entityY.Position, impulse);
+                if (angleBetween > Math.PI / 2)
+                {
+                    entityX.Velocity -= impulse / entityX.Mass;
+                    entityY.Velocity += impulse / entityY.Mass;
+                }
+                else
+                {
+                    entityX.Velocity += impulse / entityX.Mass;
+                    entityY.Velocity -= impulse / entityY.Mass;
+                }
+
+                // Calculate the effect of SpinSpeed
+                float spinEffect = (entityX.SpinSpeed - entityY.SpinSpeed) * 0.1f;
+                entityX.Velocity += new Vector2(-normal.Y, normal.X) * spinEffect;
+                entityY.Velocity -= new Vector2(-normal.Y, normal.X) * spinEffect;
+
+                entityX.HasCollidedWith.Add(entityY.Id);
+                entityY.HasCollidedWith.Add(entityX.Id);
             });
 
             Parallel.For(0, Entities.Count, i => {
