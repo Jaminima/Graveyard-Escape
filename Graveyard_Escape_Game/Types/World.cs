@@ -30,10 +30,10 @@ namespace Graveyard_Escape_Lib.Types
                 float vx = (float)random.NextDouble() * 0.02f - 0.01f;
                 float vy = (float)random.NextDouble() * 0.02f - 0.01f;
 
-                // if (random.Next(0, 10) > 8){
-                //     vx *= 10;
-                //     vy *= 10;
-                // }
+                if (random.Next(0, 10) > 8){
+                    vx *= 10;
+                    vy *= 10;
+                }
 
                 float r = random.Next(0, 255) / 255.0f;
                 float g = random.Next(0, 255) / 255.0f;
@@ -148,6 +148,11 @@ namespace Graveyard_Escape_Lib.Types
                 float spinEffect = (entityX.SpinSpeed - entityY.SpinSpeed) * 0.1f;
                 entityX.Velocity += new Vector2(-normal.Y, normal.X) * spinEffect;
                 entityY.Velocity -= new Vector2(-normal.Y, normal.X) * spinEffect;
+
+                // Move the entities apart to avoid double collision
+                float overlap = (entityX.Radius + entityY.Radius) - collisionResult.Distance;
+                entityX.Position += normal * overlap / 2;
+                entityY.Position -= normal * overlap / 2;
 
                 entityX.HasCollidedWith.Add(entityY.Id);
                 entityY.HasCollidedWith.Add(entityX.Id);
