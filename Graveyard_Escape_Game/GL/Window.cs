@@ -7,6 +7,7 @@ using OpenTK.Input;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace Graveyard_Escape_Game
 {
@@ -95,7 +96,30 @@ namespace Graveyard_Escape_Game
         {
             base.OnUpdateFrame(e);
             // ...update logic...
+            HandleInput((float)e.Time);
             _world.Update((float)e.Time);
+        }
+
+        private void HandleInput(float deltaTime)
+        {
+            KeyboardState keyboardState = KeyboardState.GetSnapshot();
+
+            if (keyboardState.IsKeyDown(Keys.W))
+            {
+                _cameraPosition.Y += 1.0f * deltaTime;
+            }
+            if (keyboardState.IsKeyDown(Keys.S))
+            {
+                _cameraPosition.Y -= 1.0f * deltaTime;
+            }
+            if (keyboardState.IsKeyDown(Keys.A))
+            {
+                _cameraPosition.X -= 1.0f * deltaTime;
+            }
+            if (keyboardState.IsKeyDown(Keys.D))
+            {
+                _cameraPosition.X += 1.0f * deltaTime;
+            }
         }
 
         protected override void OnResize(ResizeEventArgs e)
