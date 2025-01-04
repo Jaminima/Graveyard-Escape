@@ -16,7 +16,6 @@ namespace Graveyard_Escape_Game.Renderers
         private int _vertexArrayObject;
         private int _entityPositionLocation;
         private int _entityScaleLocation;
-        private int _entityRotationLocation;
         private int _entityColourLocation;
 
         public void InitGL<T>(Entity<T> entity) where T : Renderer, new()
@@ -53,7 +52,6 @@ namespace Graveyard_Escape_Game.Renderers
             // Get uniform locations
             _entityPositionLocation = GL.GetUniformLocation(_shaderProgram, "entityPosition");
             _entityScaleLocation = GL.GetUniformLocation(_shaderProgram, "entityScale");
-            _entityRotationLocation = GL.GetUniformLocation(_shaderProgram, "entityRotation");
             _entityColourLocation = GL.GetUniformLocation(_shaderProgram, "entityColour");
         }
 
@@ -66,15 +64,12 @@ namespace Graveyard_Escape_Game.Renderers
 
             // Set the entity position and scale uniforms
             GL.Uniform2(_entityPositionLocation, entity.Position.X, entity.Position.Y);
-            GL.Uniform1(_entityScaleLocation, entity.Scale);
-
-            // Set the entity rotation uniform
-            GL.Uniform1(_entityRotationLocation, entity.Rotation);
+            GL.Uniform1(_entityScaleLocation, entity.Radius);
 
             // Set the entity colour uniform
             GL.Uniform4(_entityColourLocation, entity.Colour.X, entity.Colour.Y, entity.Colour.Z, entity.Colour.W);
 
-            GL.DrawArrays(PrimitiveType.Triangles, 0, 6);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, entity.VertexData.Length / 4);
         }
 
         public void UnloadGL()
