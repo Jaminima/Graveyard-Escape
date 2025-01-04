@@ -158,15 +158,15 @@ namespace Graveyard_Escape_Lib.Types
 
                 entity.Position += entity.Velocity * dtime;
 
-                if (entity.Position.X > 1.0f || entity.Position.X < -1.0f)
-                {
-                    entity.Velocity = new Vector2(-entity.Velocity.X, entity.Velocity.Y) / 2.0f;
-                }
+                // if (entity.Position.X > 1.0f || entity.Position.X < -1.0f)
+                // {
+                //     entity.Velocity = new Vector2(-entity.Velocity.X, entity.Velocity.Y) / 2.0f;
+                // }
 
-                if (entity.Position.Y > 1.0f || entity.Position.Y < -1.0f)
-                {
-                    entity.Velocity = new Vector2(entity.Velocity.X, -entity.Velocity.Y) / 2.0f;
-                }
+                // if (entity.Position.Y > 1.0f || entity.Position.Y < -1.0f)
+                // {
+                //     entity.Velocity = new Vector2(entity.Velocity.X, -entity.Velocity.Y) / 2.0f;
+                // }
 
                 entity.Velocity *= 0.9999f;
             });
