@@ -11,6 +11,7 @@ namespace Graveyard_Escape_Lib.Types
     public class World
     {
         public List<Entity<EntityRenderer>> Entities { get; set; }
+        public int maxEntityId = 0;
 
         public World()
         {
@@ -41,7 +42,8 @@ namespace Graveyard_Escape_Lib.Types
 
                 float SpinSpeed = (float)random.NextDouble() * 1.0f - 0.50f;
 
-                Entities.Add(new Entity<EntityRenderer>() { Id = i, Position = new System.Numerics.Vector2(x, y), Radius=0.001f, SpinSpeed = SpinSpeed, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
+                Entities.Add(new Entity<EntityRenderer>() { Id = maxEntityId, Position = new System.Numerics.Vector2(x, y), Radius=0.001f, SpinSpeed = SpinSpeed, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
+                maxEntityId++;
             }
         }
 
@@ -105,7 +107,7 @@ namespace Graveyard_Escape_Lib.Types
                 Vector2 relativeVelocity = entityX.Velocity - entityY.Velocity;
 
                 float relativeSpeed = Math.Abs(Vector2.Dot(relativeVelocity, normal));
-                if (relativeSpeed < 0.001f)
+                if (relativeSpeed < 0.0001f)
                 {
                     Vector2 relativeMomentum = entityX.Velocity / entityX.Mass + entityY.Velocity / entityY.Mass;
                     relativeMomentum /= 2;

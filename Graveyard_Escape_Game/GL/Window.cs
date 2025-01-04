@@ -1,4 +1,5 @@
 using System.Numerics;
+using Graveyard_Escape_Game.Renderers;
 using Graveyard_Escape_Lib.Types;
 using OpenTK;
 using OpenTK.Graphics;
@@ -104,6 +105,7 @@ namespace Graveyard_Escape_Game
         private void HandleInput(float deltaTime)
         {
             KeyboardState keyboardState = KeyboardState.GetSnapshot();
+            MouseState mouseState = MouseState.GetSnapshot();
 
             float step = 0.5f * deltaTime;
 
@@ -133,6 +135,19 @@ namespace Graveyard_Escape_Game
             if (keyboardState.IsKeyDown(Keys.E))
             {
                 _zoom -= zoomStep;
+            }
+
+            if (mouseState.IsButtonPressed(MouseButton.Left))
+            {
+                System.Numerics.Vector2 mousePosition = new System.Numerics.Vector2(mouseState.X, mouseState.Y);
+                System.Numerics.Vector2 worldPosition = new System.Numerics.Vector2(mousePosition.X / _width, mousePosition.Y / _height);
+                worldPosition = new System.Numerics.Vector2(worldPosition.X * 2 - 1, 1 - worldPosition.Y * 2);
+                worldPosition += _cameraPosition;
+                worldPosition /= _zoom;
+                var entity= new Entity<EntityRenderer>() { Id = _world.maxEntityId, Position = new System.Numerics.Vector2(worldPosition.X, worldPosition.Y), Radius=0.001f, SpinSpeed = 0, Velocity = new System.Numerics.Vector2(0,0), Colour = new System.Numerics.Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
+                entity.Init();
+                _world.Entities.Add(entity);
+                _world.maxEntityId++;
             }
         }
 
