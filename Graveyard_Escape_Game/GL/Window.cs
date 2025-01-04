@@ -142,8 +142,8 @@ namespace Graveyard_Escape_Game
                 System.Numerics.Vector2 mousePosition = new System.Numerics.Vector2(mouseState.X, mouseState.Y);
                 System.Numerics.Vector2 worldPosition = new System.Numerics.Vector2(mousePosition.X / _width, mousePosition.Y / _height);
                 worldPosition = new System.Numerics.Vector2(worldPosition.X * 2 - 1, 1 - worldPosition.Y * 2);
+                worldPosition = new System.Numerics.Vector2(worldPosition.X / _zoom, worldPosition.Y / _zoom);
                 worldPosition += _cameraPosition;
-                worldPosition /= _zoom;
                 var entity= new Entity<EntityRenderer>() { Id = _world.maxEntityId, Position = new System.Numerics.Vector2(worldPosition.X, worldPosition.Y), Radius=0.001f, SpinSpeed = 0, Velocity = new System.Numerics.Vector2(0,0), Colour = new System.Numerics.Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
                 entity.Init();
                 _world.Entities.Add(entity);
