@@ -104,21 +104,23 @@ namespace Graveyard_Escape_Game
         {
             KeyboardState keyboardState = KeyboardState.GetSnapshot();
 
+            float step = 0.5f * deltaTime;
+
             if (keyboardState.IsKeyDown(Keys.W))
             {
-                _cameraPosition.Y += 1.0f * deltaTime;
+                _cameraPosition.Y += step;
             }
             if (keyboardState.IsKeyDown(Keys.S))
             {
-                _cameraPosition.Y -= 1.0f * deltaTime;
+                _cameraPosition.Y -= step;
             }
             if (keyboardState.IsKeyDown(Keys.A))
             {
-                _cameraPosition.X -= 1.0f * deltaTime;
+                _cameraPosition.X -= step;
             }
             if (keyboardState.IsKeyDown(Keys.D))
             {
-                _cameraPosition.X += 1.0f * deltaTime;
+                _cameraPosition.X += step;
             }
         }
 
