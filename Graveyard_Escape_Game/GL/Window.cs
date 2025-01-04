@@ -123,6 +123,17 @@ namespace Graveyard_Escape_Game
             {
                 _cameraPosition.X += step;
             }
+
+            float zoomStep = 1.0f * deltaTime;
+
+            if (keyboardState.IsKeyDown(Keys.Q))
+            {
+                _zoom += zoomStep;
+            }
+            if (keyboardState.IsKeyDown(Keys.E))
+            {
+                _zoom -= zoomStep;
+            }
         }
 
         protected override void OnResize(ResizeEventArgs e)
