@@ -41,7 +41,7 @@ namespace Graveyard_Escape_Lib.Types
 
                 float SpinSpeed = (float)random.NextDouble() * 1.0f - 0.50f;
 
-                Entities.Add(new Entity<EntityRenderer>() { Id = i, Position = new System.Numerics.Vector2(x, y), Radius=0.005f, SpinSpeed = SpinSpeed, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
+                Entities.Add(new Entity<EntityRenderer>() { Id = i, Position = new System.Numerics.Vector2(x, y), Radius=0.001f, SpinSpeed = SpinSpeed, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
             }
         }
 
@@ -104,7 +104,7 @@ namespace Graveyard_Escape_Lib.Types
                     Vector2 relativeVelocity = entityX.Velocity - entityY.Velocity;
 
                     float relativeSpeed = Math.Abs(Vector2.Dot(relativeVelocity, normal));
-                    if (relativeSpeed < 0.0001f)
+                    if (relativeSpeed < 0.001f)
                     {
                         Vector2 relativeMomentum = entityX.Velocity / entityX.Mass + entityY.Velocity / entityY.Mass;
                         relativeMomentum /= 2;
@@ -170,17 +170,17 @@ namespace Graveyard_Escape_Lib.Types
 
                 entity.Position += entity.Velocity * dtime;
 
-                // if (entity.Position.X > 1.0f || entity.Position.X < -1.0f)
-                // {
-                //     entity.Velocity = new Vector2(-entity.Velocity.X, entity.Velocity.Y) / 2.0f;
-                // }
+                if (entity.Position.X > 1.0f || entity.Position.X < -1.0f)
+                {
+                    entity.Velocity = new Vector2(-entity.Velocity.X, entity.Velocity.Y) / 2.0f;
+                }
 
-                // if (entity.Position.Y > 1.0f || entity.Position.Y < -1.0f)
-                // {
-                //     entity.Velocity = new Vector2(entity.Velocity.X, -entity.Velocity.Y) / 2.0f;
-                // }
+                if (entity.Position.Y > 1.0f || entity.Position.Y < -1.0f)
+                {
+                    entity.Velocity = new Vector2(entity.Velocity.X, -entity.Velocity.Y) / 2.0f;
+                }
 
-                //entity.Velocity *= 0.9999f;
+                entity.Velocity *= 0.9999f;
             });
 
             for (int i = 0; i < Entities.Count; i++)
