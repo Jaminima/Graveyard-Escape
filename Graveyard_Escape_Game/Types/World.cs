@@ -57,13 +57,14 @@ namespace Graveyard_Escape_Lib.Types
         public void Update(float dtime)
         {
             var entityRegions = new Dictionary<(int, int), List<Entity<EntityRenderer>>>();
+            float regionSize = 0.5f;
 
             var regionAverageGravities = new Dictionary<(int, int), Vector2>();
 
             foreach (var entity in Entities)
             {
-                int regionX = (int)(entity.Position.X / 0.1f);
-                int regionY = (int)(entity.Position.Y / 0.1f);
+                int regionX = (int)(entity.Position.X / regionSize);
+                int regionY = (int)(entity.Position.Y / regionSize);
                 var regionKey = (regionX, regionY);
 
                 if (!entityRegions.ContainsKey(regionKey))
@@ -82,8 +83,8 @@ namespace Graveyard_Escape_Lib.Types
             Parallel.For(0, Entities.Count, i => {
                 var entity = Entities[i];
 
-                int regionX = (int)(entity.Position.X / 0.1f);
-                int regionY = (int)(entity.Position.Y / 0.1f);
+                int regionX = (int)(entity.Position.X / regionSize);
+                int regionY = (int)(entity.Position.Y / regionSize);
                 var regionKey = (regionX, regionY);
 
                 if (!entityRegions.ContainsKey(regionKey))
@@ -124,7 +125,7 @@ namespace Graveyard_Escape_Lib.Types
                     if (regionKey == regionGravity.Key)
                         continue;
 
-                    Vector2 regionLocation = new Vector2(regionX, regionY) * 0.1f;
+                    Vector2 regionLocation = new Vector2(regionX, regionY) * regionSize;
 
                     Vector2 direction = regionLocation - entity.Position;
                     float distanceSquared = direction.LengthSquared();
@@ -135,40 +136,8 @@ namespace Graveyard_Escape_Lib.Types
                 }
             });
 
-            // Parallel.ForEach(entityRegions, region =>
-            // {
-            //     var entitiesInRegion = region.Value;
-
-            //     for (int i = 0; i < entitiesInRegion.Count; i++)
-            //     {
-            //         for (int j = i + 1; j < entitiesInRegion.Count; j++)
-            //         {
-            //             var entityX = entitiesInRegion[i];
-            //             var entityY = entitiesInRegion[j];
-
-            //             bool collided = entityX.CollidesWith(entityY, out float collisionDistance);
-            //             float gravityDistance = collisionDistance / (entityX.Mass + entityY.Mass);
-            //             bool near = collisionDistance < 1.0f;
-
-            //             Vector2 direction = entityY.Position - entityX.Position;
-            //             float distanceSquared = direction.LengthSquared();
-            //             float gravitationalConstant = 0.0001f;
-            //             float relativeSize = 1 / (entityY.Radius + entityX.Radius);
-            //             Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
-            //             entityX.Velocity += gravitationalForce * (dtime * entityX.Radius * relativeSize);
-            //             entityY.Velocity -= gravitationalForce * (dtime * entityY.Radius * relativeSize);
-
-            //             lock (collisionResults)
-            //             {
-            //                 collisionResults.Add(new CollisionResult { Entity1 = Entities.IndexOf(entityX), Entity2 = Entities.IndexOf(entityY), Near = near, Collided = collided, Distance = collisionDistance });
-            //             }
-            //         }
-            //     }
-            // });
-
-            var collisons = collisionResults.Where(c => c != null && c.Collided).ToList();
-            Parallel.For(0, collisons.Count, i => {
-                var collisionResult = collisons[i];
+            Parallel.For(0, collisionResults.Count, i => {
+                var collisionResult = collisionResults[i];
 
                 var entityX = Entities[collisionResult.Entity1];
                 var entityY = Entities[collisionResult.Entity2];
@@ -226,16 +195,6 @@ namespace Graveyard_Escape_Lib.Types
                 var entity = Entities[i];
 
                 entity.Position += entity.Velocity * dtime;
-
-                // if (entity.Position.X > 1.0f || entity.Position.X < -1.0f)
-                // {
-                //     entity.Velocity = new Vector2(-entity.Velocity.X, entity.Velocity.Y) / 2.0f;
-                // }
-
-                // if (entity.Position.Y > 1.0f || entity.Position.Y < -1.0f)
-                // {
-                //     entity.Velocity = new Vector2(entity.Velocity.X, -entity.Velocity.Y) / 2.0f;
-                // }
 
                 entity.Velocity *= 0.9999f;
             });
