@@ -57,7 +57,7 @@ namespace Graveyard_Escape_Lib.Types
         public void Update(float dtime)
         {
             var entityRegions = new Dictionary<(int, int), List<Entity<EntityRenderer>>>();
-            float regionSize = 0.2f;
+            float regionSize = 0.1f;
 
             var regionAverageGravities = new Dictionary<(int, int), Vector2>();
 
@@ -77,6 +77,25 @@ namespace Graveyard_Escape_Lib.Types
 
                 regionAverageGravities[regionKey] += entity.Position;
             }
+
+            var joinedRegions = new Dictionary<(int, int),  List<Entity<EntityRenderer>>>();
+
+            foreach (var region in entityRegions)
+            {
+                var joinedRegion = new List<Entity<EntityRenderer>>();
+                for (int i=-1; i<=1; i++)
+                {
+                    for (int j=-1; j<=1; j++)
+                    {
+                        var neighbourKey = (region.Key.Item1 + i, region.Key.Item2 + j);
+                        if (entityRegions.ContainsKey(neighbourKey))
+                        {
+                            joinedRegion.AddRange(entityRegions[neighbourKey]);
+                        }
+                    }
+                }
+                joinedRegions[region.Key] = joinedRegion;
+            }
             
             var collisionResults = new List<CollisionResult>();
             
@@ -87,10 +106,10 @@ namespace Graveyard_Escape_Lib.Types
                 int regionY = (int)(entity.Position.Y / regionSize);
                 var regionKey = (regionX, regionY);
 
-                if (!entityRegions.ContainsKey(regionKey))
+                if (!joinedRegions.ContainsKey(regionKey))
                     return;
 
-                var entitiesInRegion = entityRegions[regionKey];
+                var entitiesInRegion = joinedRegions[regionKey];
 
                 for (int j = 0; j < entitiesInRegion.Count; j++)
                 {
