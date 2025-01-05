@@ -40,9 +40,7 @@ namespace Graveyard_Escape_Lib.Types
                 float g = random.Next(0, 255) / 255.0f;
                 float b = random.Next(0, 255) / 255.0f;
 
-                float SpinSpeed = (float)random.NextDouble() * 1.0f - 0.50f;
-
-                Entities.Add(new Entity<EntityRenderer>() { Id = maxEntityId, Position = new System.Numerics.Vector2(x, y), Radius=0.001f, SpinSpeed = SpinSpeed, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
+                Entities.Add(new Entity<EntityRenderer>() { Id = maxEntityId, Position = new System.Numerics.Vector2(x, y), Radius=0.001f, Velocity = new System.Numerics.Vector2(vx, vy), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) });
                 maxEntityId++;
             }
         }
@@ -60,13 +58,6 @@ namespace Graveyard_Escape_Lib.Types
         {
             int totalCollisions = ((Entities.Count * Entities.Count) / 2) - Entities.Count; 
             CollisionResult[] collisionResults = new CollisionResult[totalCollisions];
-
-            for (int i = 0; i<Entities.Count; i++)
-            {
-                var entity = Entities[i];
-                entity.LastCollidedWith = entity.HasCollidedWith;
-                entity.HasCollidedWith.Clear();
-            }
 
             Parallel.For(0, totalCollisions, i => {
                 int y = (int)((-1 + Math.Sqrt(1 + 8 * i)) / 2);
@@ -114,7 +105,6 @@ namespace Graveyard_Escape_Lib.Types
 
                     entityX.Radius = (float)Math.Sqrt(entityX.Radius * entityX.Radius + entityY.Radius * entityY.Radius);
                     entityX.Mass = entityX.Mass + entityY.Mass;
-                    entityX.SpinSpeed = (entityX.SpinSpeed + entityY.SpinSpeed) / 2;
                     entityX.Colour = entityX.Colour + entityY.Colour / 2;
                     entityX.Velocity = relativeMomentum * entityX.Mass / (entityX.Mass + entityY.Mass);
 
@@ -127,7 +117,7 @@ namespace Graveyard_Escape_Lib.Types
                 if (velocityAlongNormal > 0)
                     return;
 
-                float restitution = 0.1f; // Perfectly elastic collision
+                float restitution = 0.5f; // Perfectly elastic collision
                 float impulseScalar = -(1 + restitution) * velocityAlongNormal;
                 impulseScalar /= 1 / entityX.Mass + 1 / entityY.Mass;
 
@@ -146,18 +136,10 @@ namespace Graveyard_Escape_Lib.Types
                     entityY.Velocity -= impulse / entityY.Mass;
                 }
 
-                // Calculate the effect of SpinSpeed
-                float spinEffect = (entityX.SpinSpeed - entityY.SpinSpeed) * 0.1f;
-                entityX.Velocity += new Vector2(-normal.Y, normal.X) * spinEffect;
-                entityY.Velocity -= new Vector2(-normal.Y, normal.X) * spinEffect;
-
                 // Move the entities apart to avoid double collision
                 float overlap = (entityX.Radius + entityY.Radius) - collisionResult.Distance;
                 entityX.Position += normal * overlap / 2;
                 entityY.Position -= normal * overlap / 2;
-
-                entityX.HasCollidedWith.Add(entityY.Id);
-                entityY.HasCollidedWith.Add(entityX.Id);
             });
 
             Parallel.For(0, Entities.Count, i => {

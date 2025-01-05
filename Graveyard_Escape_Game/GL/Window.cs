@@ -159,7 +159,7 @@ namespace Graveyard_Escape_Game
                 float g = random.Next(0, 255) / 255.0f;
                 float b = random.Next(0, 255) / 255.0f;
 
-                var entity= new Entity<EntityRenderer>() { Id = _world.maxEntityId, Position = new System.Numerics.Vector2(worldPosition.X, worldPosition.Y), Radius=radius, Mass = mass, SpinSpeed = 0, Velocity = new System.Numerics.Vector2(0,0), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) };
+                var entity= new Entity<EntityRenderer>() { Id = _world.maxEntityId, Position = new System.Numerics.Vector2(worldPosition.X, worldPosition.Y), Radius=radius, Mass = mass, Velocity = new System.Numerics.Vector2(0,0), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) };
                 entity.Init();
                 _world.Entities.Add(entity);
                 _world.maxEntityId++;
