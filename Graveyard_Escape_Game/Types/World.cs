@@ -117,7 +117,7 @@ namespace Graveyard_Escape_Lib.Types
                 if (velocityAlongNormal > 0)
                     return;
 
-                float restitution = 0.5f; // Perfectly elastic collision
+                float restitution = 0.9f; // Perfectly elastic collision
                 float impulseScalar = -(1 + restitution) * velocityAlongNormal;
                 impulseScalar /= 1 / entityX.Mass + 1 / entityY.Mass;
 
