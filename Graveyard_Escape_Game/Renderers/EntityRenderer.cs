@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using Graveyard_Escape_Lib.Types;
 using OpenTK.Graphics.OpenGL;
@@ -17,6 +18,7 @@ namespace Graveyard_Escape_Game.Renderers
         private int _entityPositionLocation;
         private int _entityScaleLocation;
         private int _entityColourLocation;
+        private int _sceneZoomLocation;
 
         public void InitGL<T>(Entity<T> entity) where T : Renderer, new()
         {
@@ -53,9 +55,10 @@ namespace Graveyard_Escape_Game.Renderers
             _entityPositionLocation = GL.GetUniformLocation(_shaderProgram, "entityPosition");
             _entityScaleLocation = GL.GetUniformLocation(_shaderProgram, "entityScale");
             _entityColourLocation = GL.GetUniformLocation(_shaderProgram, "entityColour");
+            _sceneZoomLocation = GL.GetUniformLocation(_shaderProgram, "sceneZoom");
         }
 
-        public void RenderGL<T>(Entity<T> entity) where T : Renderer, new()
+        public void RenderGL<T>(Entity<T> entity, Vector2 cameraPosition, float sceneZoom) where T : Renderer, new()
         {
             // Bind and use shader program
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
@@ -63,11 +66,15 @@ namespace Graveyard_Escape_Game.Renderers
             GL.UseProgram(_shaderProgram);
 
             // Set the entity position and scale uniforms
-            GL.Uniform2(_entityPositionLocation, entity.Position.X, entity.Position.Y);
+            Vector2 scenePosition = entity.Position - cameraPosition;
+            GL.Uniform2(_entityPositionLocation, scenePosition.X, scenePosition.Y);
             GL.Uniform1(_entityScaleLocation, entity.Radius);
 
             // Set the entity colour uniform
             GL.Uniform4(_entityColourLocation, entity.Colour.X, entity.Colour.Y, entity.Colour.Z, entity.Colour.W);
+
+            // Set the scene zoom
+            GL.Uniform1(_sceneZoomLocation, sceneZoom);
 
             GL.DrawArrays(PrimitiveType.Triangles, 0, entity.VertexData.Length / 4);
         }

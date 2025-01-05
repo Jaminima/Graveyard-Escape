@@ -1,3 +1,5 @@
+using System.Numerics;
+using Graveyard_Escape_Game.Renderers;
 using Graveyard_Escape_Lib.Types;
 using OpenTK;
 using OpenTK.Graphics;
@@ -6,6 +8,7 @@ using OpenTK.Input;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace Graveyard_Escape_Game
 {
@@ -19,6 +22,8 @@ namespace Graveyard_Escape_Game
         //FPS counter
         private double _time = 0;
         private int _frames = 0;
+        private float _zoom = 1.0f;
+        private System.Numerics.Vector2 _cameraPosition = new System.Numerics.Vector2(0, 0f);
 
         public Window(int width, int height, string title): base(new GameWindowSettings(), new NativeWindowSettings() { ClientSize = new Vector2i(width, height), Title = title,   })
         {
@@ -74,7 +79,7 @@ namespace Graveyard_Escape_Game
             // Render entities
             foreach (var entity in _world.Entities)
             {
-                entity.Render();
+                entity.Render(_cameraPosition, _zoom);
             }
 
             SwapBuffers();
@@ -93,7 +98,74 @@ namespace Graveyard_Escape_Game
         {
             base.OnUpdateFrame(e);
             // ...update logic...
+            HandleInput((float)e.Time);
             _world.Update((float)e.Time);
+        }
+
+        private float mouseHeldFor = 0.0f;
+        private Random random = new Random();
+        private void HandleInput(float deltaTime)
+        {
+            KeyboardState keyboardState = KeyboardState.GetSnapshot();
+            MouseState mouseState = MouseState.GetSnapshot();
+
+            float step = 0.5f * deltaTime;
+
+            if (keyboardState.IsKeyDown(Keys.W))
+            {
+                _cameraPosition.Y += step;
+            }
+            if (keyboardState.IsKeyDown(Keys.S))
+            {
+                _cameraPosition.Y -= step;
+            }
+            if (keyboardState.IsKeyDown(Keys.A))
+            {
+                _cameraPosition.X -= step;
+            }
+            if (keyboardState.IsKeyDown(Keys.D))
+            {
+                _cameraPosition.X += step;
+            }
+
+            float zoomStep = 1.0f * deltaTime;
+
+            if (keyboardState.IsKeyDown(Keys.Q))
+            {
+                _zoom += zoomStep;
+            }
+            if (keyboardState.IsKeyDown(Keys.E))
+            {
+                _zoom -= zoomStep;
+            }
+
+            if (mouseState.IsButtonDown(MouseButton.Left))
+            {
+                mouseHeldFor += deltaTime;
+            }
+
+            if (mouseState.IsButtonReleased(MouseButton.Left))
+            {
+                System.Numerics.Vector2 mousePosition = new System.Numerics.Vector2(mouseState.X, mouseState.Y);
+                System.Numerics.Vector2 worldPosition = new System.Numerics.Vector2(mousePosition.X / _width, mousePosition.Y / _height);
+                worldPosition = new System.Numerics.Vector2(worldPosition.X * 2 - 1, 1 - worldPosition.Y * 2);
+                worldPosition = new System.Numerics.Vector2(worldPosition.X / _zoom, worldPosition.Y / _zoom);
+                worldPosition += _cameraPosition;
+
+                float radius = mouseHeldFor * 0.01f;
+                float mass = mouseHeldFor * 10.0f ;
+
+                float r = random.Next(0, 255) / 255.0f;
+                float g = random.Next(0, 255) / 255.0f;
+                float b = random.Next(0, 255) / 255.0f;
+
+                var entity= new Entity<EntityRenderer>() { Id = _world.maxEntityId, Position = new System.Numerics.Vector2(worldPosition.X, worldPosition.Y), Radius=radius, Mass = mass, Velocity = new System.Numerics.Vector2(0,0), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) };
+                entity.Init();
+                _world.Entities.Add(entity);
+                _world.maxEntityId++;
+
+                mouseHeldFor = 0.0f;
+            }
         }
 
         protected override void OnResize(ResizeEventArgs e)

@@ -10,13 +10,10 @@ namespace Graveyard_Escape_Lib.Types
     public class Entity<T> where T : Renderer, new()
     {
         public int Id { get; set; }
-        public List<int> LastCollidedWith { get; set; } = new List<int>();
-        public List<int> HasCollidedWith { get; set; } = new List<int>();
 
         private readonly Renderer _Renderer;
         public Vector2 Position { get; set; }
         public Vector2 Velocity { get; set; }
-        public float SpinSpeed { get; set; } = 0.0f;
         public float Radius { get; set; } = 1.0f;
         public float Mass { get; set; } = 1.0f;
         public Vector4 Colour { get; set; } = new Vector4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -85,9 +82,9 @@ namespace Graveyard_Escape_Lib.Types
             Radius = newScale;
         }
 
-        public void Render()
+        public void Render(Vector2 cameraPosition, float sceneZoom)
         {
-            _Renderer.RenderGL(this);
+            _Renderer.RenderGL(this,cameraPosition, sceneZoom);
         }
 
         public void Unload(){
