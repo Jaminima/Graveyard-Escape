@@ -23,10 +23,10 @@ namespace Graveyard_Escape_Lib.Types
             for (int i = 0; i < 2000; i++)
             {
                 float x = (float)random.NextDouble() * 2.0f - 1.0f;
-                x/=2;
+                //x/=2;
                 
                 float y = (float)random.NextDouble() * 2.0f - 1.0f;
-                y/=2;
+                //y/=2;
 
                 float vx = (float)random.NextDouble() * 0.02f - 0.01f;
                 float vy = (float)random.NextDouble() * 0.02f - 0.01f;
@@ -111,7 +111,7 @@ namespace Graveyard_Escape_Lib.Types
 
                 var entitiesInRegion = joinedRegions[regionKey];
 
-                for (int j = 0; j < entitiesInRegion.Count; j++)
+                for (int j = i + 1; j < entitiesInRegion.Count; j++)
                 {
                     var otherEntity = entitiesInRegion[j];
 
@@ -166,7 +166,7 @@ namespace Graveyard_Escape_Lib.Types
                 Vector2 relativeVelocity = entityX.Velocity - entityY.Velocity;
 
                 float relativeSpeed = Math.Abs(Vector2.Dot(relativeVelocity, normal));
-                if (relativeSpeed < 0.001f)
+                if (relativeSpeed < 0.0001f)
                 {
                     Vector2 relativeMomentum = entityX.Velocity / entityX.Mass + entityY.Velocity / entityY.Mass;
                     relativeMomentum /= 2;
