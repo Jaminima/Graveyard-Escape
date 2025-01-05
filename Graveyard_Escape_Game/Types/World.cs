@@ -56,34 +56,54 @@ namespace Graveyard_Escape_Lib.Types
 
         public void Update(float dtime)
         {
-            int totalCollisions = ((Entities.Count * Entities.Count) / 2) - Entities.Count; 
-            CollisionResult[] collisionResults = new CollisionResult[totalCollisions];
+            var entityRegions = new Dictionary<(int, int), List<Entity<EntityRenderer>>>();
 
-            Parallel.For(0, totalCollisions, i => {
-                int y = (int)((-1 + Math.Sqrt(1 + 8 * i)) / 2);
-                int x = i - (y * (y + 1)) / 2;
+            foreach (var entity in Entities)
+            {
+                int regionX = (int)(entity.Position.X / 0.1f);
+                int regionY = (int)(entity.Position.Y / 0.1f);
+                var regionKey = (regionX, regionY);
 
-                if (x == y)
+                if (!entityRegions.ContainsKey(regionKey))
                 {
-                    return;
+                    entityRegions[regionKey] = new List<Entity<EntityRenderer>>();
                 }
 
-                var entityX = Entities[x];
-                var entityY = Entities[y];
+                entityRegions[regionKey].Add(entity);
+            }
+            
+            var collisionResults = new List<CollisionResult>();
+            
 
-                bool collided = entityX.CollidesWith(entityY, out float collisionDistance);
-                float gravityDistance =collisionDistance / (entityX.Mass + entityY.Mass);
-                bool near = collisionDistance < 1.0f;
+            Parallel.ForEach(entityRegions, region =>
+            {
+                var entitiesInRegion = region.Value;
 
-                Vector2 direction = entityY.Position - entityX.Position;
-                float distanceSquared = direction.LengthSquared();
-                float gravitationalConstant = 0.0001f;
-                float relativeSize = 1 / (entityY.Radius + entityX.Radius);
-                Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
-                entityX.Velocity += gravitationalForce * (dtime * entityX.Radius * relativeSize);
-                entityY.Velocity -= gravitationalForce * (dtime * entityY.Radius * relativeSize);
+                for (int i = 0; i < entitiesInRegion.Count; i++)
+                {
+                    for (int j = i + 1; j < entitiesInRegion.Count; j++)
+                    {
+                        var entityX = entitiesInRegion[i];
+                        var entityY = entitiesInRegion[j];
 
-                collisionResults[i] = new CollisionResult { Entity1 = x, Entity2 = y, Near = near, Collided = collided, Distance = collisionDistance };
+                        bool collided = entityX.CollidesWith(entityY, out float collisionDistance);
+                        float gravityDistance = collisionDistance / (entityX.Mass + entityY.Mass);
+                        bool near = collisionDistance < 1.0f;
+
+                        Vector2 direction = entityY.Position - entityX.Position;
+                        float distanceSquared = direction.LengthSquared();
+                        float gravitationalConstant = 0.0001f;
+                        float relativeSize = 1 / (entityY.Radius + entityX.Radius);
+                        Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
+                        entityX.Velocity += gravitationalForce * (dtime * entityX.Radius * relativeSize);
+                        entityY.Velocity -= gravitationalForce * (dtime * entityY.Radius * relativeSize);
+
+                        lock (collisionResults)
+                        {
+                            collisionResults.Add(new CollisionResult { Entity1 = Entities.IndexOf(entityX), Entity2 = Entities.IndexOf(entityY), Near = near, Collided = collided, Distance = collisionDistance });
+                        }
+                    }
+                }
             });
 
             var collisons = collisionResults.Where(c => c != null && c.Collided).ToList();
