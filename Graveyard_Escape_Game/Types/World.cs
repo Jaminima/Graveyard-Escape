@@ -110,10 +110,28 @@ namespace Graveyard_Escape_Lib.Types
                     entity.Velocity += gravitationalForce * (dtime * entity.Radius * relativeSize);
                     otherEntity.Velocity -= gravitationalForce * (dtime * otherEntity.Radius * relativeSize);
 
-                    lock (collisionResults)
+                    if (collided)
                     {
-                        collisionResults.Add(new CollisionResult { Entity1 = i, Entity2 = Entities.IndexOf(otherEntity), Near = near, Collided = collided, Distance = collisionDistance });
+                        lock (collisionResults)
+                        {
+                            collisionResults.Add(new CollisionResult { Entity1 = i, Entity2 = Entities.IndexOf(otherEntity), Near = near, Collided = collided, Distance = collisionDistance });
+                        }
                     }
+                }
+
+                foreach (var regionGravity in regionAverageGravities)
+                {
+                    if (regionKey == regionGravity.Key)
+                        continue;
+
+                    Vector2 regionLocation = new Vector2(regionX, regionY) * 0.1f;
+
+                    Vector2 direction = regionLocation - entity.Position;
+                    float distanceSquared = direction.LengthSquared();
+                    float gravitationalConstant = 0.0001f;
+                    float relativeSize = 1 / entity.Radius;
+                    Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
+                    entity.Velocity += gravitationalForce * (dtime * entity.Radius * relativeSize);
                 }
             });
 
