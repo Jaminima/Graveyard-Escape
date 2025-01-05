@@ -23,15 +23,19 @@ namespace Graveyard_Escape_Lib.Types
             for (int i = 0; i < 2000; i++)
             {
                 float x = (float)random.NextDouble() * 2.0f - 1.0f;
-                //x/=2;
+                x/=2;
                 
                 float y = (float)random.NextDouble() * 2.0f - 1.0f;
-                //y/=2;
+                y/=2;
 
-                float vx = (float)random.NextDouble() * 0.02f - 0.01f;
-                float vy = (float)random.NextDouble() * 0.02f - 0.01f;
+                // Calculate clockwise velocity using trigonometric functions
+                float angle = (float)Math.Atan2(y, x);
+                float speed = 0.8f;
+                float vx = speed * (float)Math.Sin(angle);
+                float vy = -speed * (float)Math.Cos(angle);
 
-                if (random.Next(0, 10) > 8){
+                if (random.Next(0, 10) > 8)
+                {
                     vx *= 10;
                     vy *= 10;
                 }
@@ -109,6 +113,7 @@ namespace Graveyard_Escape_Lib.Types
                 if (!joinedRegions.ContainsKey(regionKey))
                     return;
 
+                var localRegion = entityRegions[regionKey];
                 var entitiesInRegion = joinedRegions[regionKey];
 
                 for (int j = i + 1; j < entitiesInRegion.Count; j++)
@@ -122,13 +127,16 @@ namespace Graveyard_Escape_Lib.Types
                     float gravityDistance = collisionDistance / (entity.Mass + otherEntity.Mass);
                     bool near = collisionDistance < 1.0f;
 
-                    // Vector2 direction = otherEntity.Position - entity.Position;
-                    // float distanceSquared = direction.LengthSquared();
-                    // float gravitationalConstant = 0.0001f;
-                    // float relativeSize = 1 / (otherEntity.Radius + entity.Radius);
-                    // Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
-                    // entity.Velocity += gravitationalForce * (dtime * entity.Radius * relativeSize);
-                    // otherEntity.Velocity -= gravitationalForce * (dtime * otherEntity.Radius * relativeSize);
+                    if (localRegion.Contains(otherEntity))
+                    {
+                        Vector2 direction = otherEntity.Position - entity.Position;
+                        float distanceSquared = direction.LengthSquared();
+                        float gravitationalConstant = 0.0001f;
+                        float relativeSize = 1 / (otherEntity.Radius + entity.Radius);
+                        Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
+                        entity.Velocity += gravitationalForce * (dtime * entity.Radius * relativeSize);
+                        otherEntity.Velocity -= gravitationalForce * (dtime * otherEntity.Radius * relativeSize);
+                    }
 
                     if (collided)
                     {
@@ -148,7 +156,7 @@ namespace Graveyard_Escape_Lib.Types
 
                     Vector2 direction = regionLocation - entity.Position;
                     float distanceSquared = direction.LengthSquared();
-                    float gravitationalConstant = 0.00001f;
+                    float gravitationalConstant = 0.0001f;
                     float relativeSize = 1 / entity.Radius;
                     Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
                     entity.Velocity += gravitationalForce * (dtime * entity.Radius * relativeSize);
@@ -166,7 +174,7 @@ namespace Graveyard_Escape_Lib.Types
                 Vector2 relativeVelocity = entityX.Velocity - entityY.Velocity;
 
                 float relativeSpeed = Math.Abs(Vector2.Dot(relativeVelocity, normal));
-                if (relativeSpeed < 0.001f)
+                if (relativeSpeed < 0.01f)
                 {
                     Vector2 relativeMomentum = entityX.Velocity / entityX.Mass + entityY.Velocity / entityY.Mass;
                     relativeMomentum /= 2;
@@ -222,7 +230,7 @@ namespace Graveyard_Escape_Lib.Types
 
                 entity.Position += entity.Velocity * dtime;
 
-                entity.Velocity *= 0.999f;
+                entity.Velocity *= 0.9999f;
             });
 
             for (int i = 0; i < Entities.Count; i++)
