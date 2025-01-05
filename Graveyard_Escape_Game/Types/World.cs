@@ -20,7 +20,7 @@ namespace Graveyard_Escape_Lib.Types
             Entities = new List<Entity<EntityRenderer>>();
 
             // Add some entities
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 2000; i++)
             {
                 float x = (float)random.NextDouble() * 2.0f - 1.0f;
                 x/=2;
@@ -57,7 +57,7 @@ namespace Graveyard_Escape_Lib.Types
         public void Update(float dtime)
         {
             var entityRegions = new Dictionary<(int, int), List<Entity<EntityRenderer>>>();
-            float regionSize = 0.5f;
+            float regionSize = 0.2f;
 
             var regionAverageGravities = new Dictionary<(int, int), Vector2>();
 
@@ -147,7 +147,7 @@ namespace Graveyard_Escape_Lib.Types
                 Vector2 relativeVelocity = entityX.Velocity - entityY.Velocity;
 
                 float relativeSpeed = Math.Abs(Vector2.Dot(relativeVelocity, normal));
-                if (relativeSpeed < 0.0001f)
+                if (relativeSpeed < 0.001f)
                 {
                     Vector2 relativeMomentum = entityX.Velocity / entityX.Mass + entityY.Velocity / entityY.Mass;
                     relativeMomentum /= 2;
