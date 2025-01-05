@@ -122,13 +122,13 @@ namespace Graveyard_Escape_Lib.Types
                     float gravityDistance = collisionDistance / (entity.Mass + otherEntity.Mass);
                     bool near = collisionDistance < 1.0f;
 
-                    Vector2 direction = otherEntity.Position - entity.Position;
-                    float distanceSquared = direction.LengthSquared();
-                    float gravitationalConstant = 0.0001f;
-                    float relativeSize = 1 / (otherEntity.Radius + entity.Radius);
-                    Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
-                    entity.Velocity += gravitationalForce * (dtime * entity.Radius * relativeSize);
-                    otherEntity.Velocity -= gravitationalForce * (dtime * otherEntity.Radius * relativeSize);
+                    // Vector2 direction = otherEntity.Position - entity.Position;
+                    // float distanceSquared = direction.LengthSquared();
+                    // float gravitationalConstant = 0.0001f;
+                    // float relativeSize = 1 / (otherEntity.Radius + entity.Radius);
+                    // Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
+                    // entity.Velocity += gravitationalForce * (dtime * entity.Radius * relativeSize);
+                    // otherEntity.Velocity -= gravitationalForce * (dtime * otherEntity.Radius * relativeSize);
 
                     if (collided)
                     {
@@ -148,7 +148,7 @@ namespace Graveyard_Escape_Lib.Types
 
                     Vector2 direction = regionLocation - entity.Position;
                     float distanceSquared = direction.LengthSquared();
-                    float gravitationalConstant = 0.0001f;
+                    float gravitationalConstant = 0.00001f;
                     float relativeSize = 1 / entity.Radius;
                     Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
                     entity.Velocity += gravitationalForce * (dtime * entity.Radius * relativeSize);
@@ -166,10 +166,17 @@ namespace Graveyard_Escape_Lib.Types
                 Vector2 relativeVelocity = entityX.Velocity - entityY.Velocity;
 
                 float relativeSpeed = Math.Abs(Vector2.Dot(relativeVelocity, normal));
-                if (relativeSpeed < 0.0001f)
+                if (relativeSpeed < 0.001f)
                 {
                     Vector2 relativeMomentum = entityX.Velocity / entityX.Mass + entityY.Velocity / entityY.Mass;
                     relativeMomentum /= 2;
+
+                    if (entityX.Mass < entityY.Mass)
+                    {
+                        var temp = entityX;
+                        entityX = entityY;
+                        entityY = temp;
+                    }
 
                     entityX.Radius = (float)Math.Sqrt(entityX.Radius * entityX.Radius + entityY.Radius * entityY.Radius);
                     entityX.Mass = entityX.Mass + entityY.Mass;
@@ -185,7 +192,7 @@ namespace Graveyard_Escape_Lib.Types
                 if (velocityAlongNormal > 0)
                     return;
 
-                float restitution = 0.9f; // Perfectly elastic collision
+                float restitution = 0.7f; // Perfectly elastic collision
                 float impulseScalar = -(1 + restitution) * velocityAlongNormal;
                 impulseScalar /= 1 / entityX.Mass + 1 / entityY.Mass;
 
@@ -215,7 +222,7 @@ namespace Graveyard_Escape_Lib.Types
 
                 entity.Position += entity.Velocity * dtime;
 
-                entity.Velocity *= 0.9999f;
+                entity.Velocity *= 0.999f;
             });
 
             for (int i = 0; i < Entities.Count; i++)
