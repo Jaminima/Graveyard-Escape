@@ -23,6 +23,7 @@ namespace Graveyard_Escape_Game
         private double _time = 0;
         private int _frames = 0;
         private float _zoom = 1.0f;
+        private float _timeScale = 1.0f;
         private System.Numerics.Vector2 _cameraPosition = new System.Numerics.Vector2(0, 0f);
 
         public Window(int width, int height, string title): base(new GameWindowSettings(), new NativeWindowSettings() { ClientSize = new Vector2i(width, height), Title = title,   })
@@ -99,7 +100,7 @@ namespace Graveyard_Escape_Game
             base.OnUpdateFrame(e);
             // ...update logic...
             HandleInput((float)e.Time);
-            _world.Update((float)e.Time);
+            _world.Update((float)e.Time * _timeScale);
         }
 
         private float mouseHeldFor = 0.0f;
@@ -109,6 +110,19 @@ namespace Graveyard_Escape_Game
             KeyboardState keyboardState = KeyboardState.GetSnapshot();
             MouseState mouseState = MouseState.GetSnapshot();
 
+            //TIME SCALE
+            float timeScaleStep = 1 + (1.0f * deltaTime);
+
+            if (keyboardState.IsKeyDown(Keys.Z))
+            {
+                _timeScale *= timeScaleStep;
+            }
+            if (keyboardState.IsKeyDown(Keys.X))
+            {
+                _timeScale /= timeScaleStep;
+            }
+
+            //MOVEMENT
             float step = 0.5f * deltaTime;
 
             if (keyboardState.IsKeyDown(Keys.W))
@@ -128,6 +142,7 @@ namespace Graveyard_Escape_Game
                 _cameraPosition.X += step;
             }
 
+            // ZOOM
             float zoomStep = 1.0f * deltaTime;
 
             if (keyboardState.IsKeyDown(Keys.Q))

@@ -30,7 +30,7 @@ namespace Graveyard_Escape_Lib.Types
 
                 // Calculate clockwise velocity using trigonometric functions
                 float angle = (float)Math.Atan2(y, x);
-                float speed = 0.8f;
+                float speed = 0.4f;
                 float vx = speed * (float)Math.Sin(angle);
                 float vy = -speed * (float)Math.Cos(angle);
 
