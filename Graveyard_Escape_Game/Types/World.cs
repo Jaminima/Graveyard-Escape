@@ -23,14 +23,14 @@ namespace Graveyard_Escape_Lib.Types
             for (int i = 0; i < 2000; i++)
             {
                 float x = (float)random.NextDouble() * 2.0f - 1.0f;
-                x/=2;
+                x/=3;
                 
                 float y = (float)random.NextDouble() * 2.0f - 1.0f;
-                y/=2;
+                y/=3;
 
                 // Calculate clockwise velocity using trigonometric functions
                 float angle = (float)Math.Atan2(y, x);
-                float speed = 0.4f;
+                float speed = 0.1f;
                 float vx = speed * (float)Math.Sin(angle);
                 float vy = -speed * (float)Math.Cos(angle);
 
@@ -131,7 +131,7 @@ namespace Graveyard_Escape_Lib.Types
                     {
                         Vector2 direction = otherEntity.Position - entity.Position;
                         float distanceSquared = direction.LengthSquared();
-                        float gravitationalConstant = 0.0001f;
+                        float gravitationalConstant = 0.001f;
                         float relativeSize = 1 / (otherEntity.Radius + entity.Radius);
                         Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
                         entity.Velocity += gravitationalForce * (dtime * entity.Radius * relativeSize);
@@ -156,7 +156,7 @@ namespace Graveyard_Escape_Lib.Types
 
                     Vector2 direction = regionLocation - entity.Position;
                     float distanceSquared = direction.LengthSquared();
-                    float gravitationalConstant = 0.0001f;
+                    float gravitationalConstant = 0.001f;
                     float relativeSize = 1 / entity.Radius;
                     Vector2 gravitationalForce = gravitationalConstant * direction / distanceSquared;
                     entity.Velocity += gravitationalForce * (dtime * entity.Radius * relativeSize);
