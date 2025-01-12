@@ -207,22 +207,16 @@ namespace Graveyard_Escape_Lib.Types
                 Vector2 impulse = impulseScalar * normal;
 
                 // Apply impulse based on relative positions
-                var angleBetween = Vector2.Dot(entityX.Position - entityY.Position, impulse);
-                if (angleBetween > Math.PI / 2)
-                {
-                    entityX.Velocity -= impulse / entityX.Mass;
-                    entityY.Velocity += impulse / entityY.Mass;
-                }
-                else
-                {
-                    entityX.Velocity += impulse / entityX.Mass;
-                    entityY.Velocity -= impulse / entityY.Mass;
-                }
+                entityX.Velocity -= impulse / entityX.Mass;
+                entityY.Velocity += impulse / entityY.Mass;
 
                 // Move the entities apart to avoid double collision
                 float overlap = (entityX.Radius + entityY.Radius) - collisionResult.Distance;
-                entityX.Position += normal * overlap / 2;
-                entityY.Position -= normal * overlap / 2;
+                if (overlap > 0)
+                {
+                    entityX.Position += normal * overlap / 2;
+                    entityY.Position -= normal * overlap / 2;
+                }
             });
 
             Parallel.For(0, Entities.Count, i => {
