@@ -69,18 +69,23 @@ namespace Graveyard_Escape_Lib.Types
 
                 bool collided = entityA.CollidesWith(entityB, out float distance);
 
-                if (collided && distance < 0.9f)
+                if (collided)
                 {
-                    entityA.Velocity = (entityA.Velocity + entityB.Velocity) / 2;
+                    if (distance < 0.9f)
+                    {
+                        entityA.Velocity = (entityA.Velocity + entityB.Velocity) / 2;
+                    }
                 }
-                else if (distance < 1.2f)
+                else if (distance < 1.5f)
                 {
                     //Repulse Apart
                     Vector2 direction = entityB.Position - entityA.Position;
 
                     Vector2 forceDirection = Vector2.Normalize(direction);
 
-                    entityA.Velocity -= forceDirection * dtime;
+                    float relativeForce = MathF.Exp(1.0f - distance);
+
+                    entityA.Velocity -= forceDirection * dtime / relativeForce;
                 }
                 else
                 {
@@ -99,7 +104,7 @@ namespace Graveyard_Escape_Lib.Types
 
                 entity.Position += entity.Velocity * dtime;
 
-                entity.Velocity *= 0.9995f;
+                entity.Velocity *= 0.99f;
             });
 
             for (int i = 0; i < Entities.Count; i++)
