@@ -41,35 +41,6 @@ namespace Graveyard_Escape_Game
 
             // Print graphics system information
             PrintGraphicsInfo();
-
-            // Disable depth test for 2D rendering
-            GL.Disable(EnableCap.DepthTest);
-
-            // Set up the projection matrix
-            GL.MatrixMode(MatrixMode.Projection);
-            GL.LoadIdentity();
-            GL.Ortho(0.0, _width, 0.0, _height, -1.0, 1.0);
-
-            // Set up the modelview matrix
-            GL.MatrixMode(MatrixMode.Modelview);
-            GL.LoadIdentity();
-
-            // Initialize OpenGL for entities
-            foreach (var entity in _world.Entities)
-            {
-                entity.Init();
-            }
-        }
-
-        protected override void OnUnload()
-        {
-            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-            GL.BindVertexArray(0);
-            GL.UseProgram(0);
-
-            _world.Entities.ForEach(entity => entity.Unload());
-
-            base.OnUnload();
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
@@ -77,11 +48,9 @@ namespace Graveyard_Escape_Game
             base.OnRenderFrame(e);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            // Render entities
-            foreach (var entity in _world.Entities)
-            {
-                entity.Render(_cameraPosition, _zoom);
-            }
+            _world.Update((float)e.Time * _timeScale);
+
+
 
             SwapBuffers();
 
@@ -155,34 +124,6 @@ namespace Graveyard_Escape_Game
             }
 
             _zoom = Math.Max(0.01f, _zoom);
-
-            if (mouseState.IsButtonDown(MouseButton.Left))
-            {
-                mouseHeldFor += deltaTime;
-            }
-
-            if (mouseState.IsButtonReleased(MouseButton.Left))
-            {
-                System.Numerics.Vector2 mousePosition = new System.Numerics.Vector2(mouseState.X, mouseState.Y);
-                System.Numerics.Vector2 worldPosition = new System.Numerics.Vector2(mousePosition.X / _width, mousePosition.Y / _height);
-                worldPosition = new System.Numerics.Vector2(worldPosition.X * 2 - 1, 1 - worldPosition.Y * 2);
-                worldPosition = new System.Numerics.Vector2(worldPosition.X / _zoom, worldPosition.Y / _zoom);
-                worldPosition += _cameraPosition;
-
-                float radius = mouseHeldFor * 0.01f;
-                float mass = mouseHeldFor * 10.0f ;
-
-                float r = random.Next(0, 255) / 255.0f;
-                float g = random.Next(0, 255) / 255.0f;
-                float b = random.Next(0, 255) / 255.0f;
-
-                var entity= new Entity<EntityRenderer>() { Id = _world.maxEntityId, Position = new System.Numerics.Vector2(worldPosition.X, worldPosition.Y), Radius=radius, Mass = mass, Velocity = new System.Numerics.Vector2(0,0), Colour = new System.Numerics.Vector4(r, g, b, 1.0f) };
-                entity.Init();
-                _world.Entities.Add(entity);
-                _world.maxEntityId++;
-
-                mouseHeldFor = 0.0f;
-            }
         }
 
         protected override void OnResize(ResizeEventArgs e)
