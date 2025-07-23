@@ -25,7 +25,7 @@ namespace Graveyard_Escape_Game
         private double _time = 0;
         private int _frames = 0;
         private float _zoom = 1.0f;
-        private float _timeScale = 10.0f;
+        private float _timeScale = 20.0f;
         private System.Numerics.Vector2 _cameraPosition = new System.Numerics.Vector2(0, 0f);
         private int _textureHandle;
         private int _fboHandle;
@@ -113,6 +113,24 @@ namespace Graveyard_Escape_Game
             base.OnUpdateFrame(e);
             HandleInput((float)e.Time);
             _world.Update((float)e.Time * _timeScale);
+        }
+
+        protected override void OnUnload()
+        {
+            base.OnUnload();
+            
+            // Clean up resources
+            _world?.Dispose();
+            
+            if (_textureHandle != 0)
+            {
+                GL.DeleteTexture(_textureHandle);
+            }
+            
+            if (_fboHandle != 0)
+            {
+                GL.DeleteFramebuffer(_fboHandle);
+            }
         }
 
         private float mouseHeldFor = 0.0f;
