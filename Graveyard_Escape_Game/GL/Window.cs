@@ -1,6 +1,7 @@
 using System.Numerics;
-using Graveyard_Escape_Game.Renderers;
-using Graveyard_Escape_Lib.Types;
+using Graveyard_Escape_Game.Engine;
+using Graveyard_Escape_Game.Types;
+using System.Runtime.InteropServices;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
@@ -18,13 +19,16 @@ namespace Graveyard_Escape_Game
         private readonly int _height;
         private readonly string _title;
         private readonly World _world;
+        private readonly Renderer _renderer;
 
         //FPS counter
         private double _time = 0;
         private int _frames = 0;
         private float _zoom = 1.0f;
-        private float _timeScale = 1.0f;
+        private float _timeScale = 10.0f;
         private System.Numerics.Vector2 _cameraPosition = new System.Numerics.Vector2(0, 0f);
+        private int _textureHandle;
+        private int _fboHandle;
 
         public Window(int width, int height, string title): base(new GameWindowSettings(), new NativeWindowSettings() { ClientSize = new Vector2i(width, height), Title = title,   })
         {
@@ -32,25 +36,65 @@ namespace Graveyard_Escape_Game
             _height = height;
             _title = title;
             _world = new World();
+            _renderer = new Renderer();
         }
 
         protected override void OnLoad()
         {
             base.OnLoad();
-            GL.ClearColor(Color4.Black);
-
-            // Print graphics system information
+            GL.ClearColor(Color4.LightGreen);
             PrintGraphicsInfo();
+
+            // Create texture
+            _textureHandle = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, _textureHandle);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, _width, _height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
+            GL.BindTexture(TextureTarget.Texture2D, 0);
+
+            // Create FBO
+            _fboHandle = GL.GenFramebuffer();
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, _fboHandle);
+            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, _textureHandle, 0);
+
+            var fboStatus = GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer);
+            if (fboStatus != FramebufferErrorCode.FramebufferComplete)
+            {
+                Console.WriteLine($"Framebuffer is not complete: {fboStatus}");
+            }
+
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
         {
             base.OnRenderFrame(e);
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            _world.Update((float)e.Time * _timeScale);
+            PackedColor[] renderedScene = _renderer.RenderWorld(_world, _width, _height, _zoom, _cameraPosition);
 
+            // 1. Upload data to texture
+            GL.BindTexture(TextureTarget.Texture2D, _textureHandle);
+            GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, _width, _height, PixelFormat.Rgba, PixelType.UnsignedByte, renderedScene);
+            GL.BindTexture(TextureTarget.Texture2D, 0);
 
+            // 2. Bind the FBO as the read framebuffer
+            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, _fboHandle);
+            
+            // 3. Bind the default framebuffer as the draw framebuffer
+            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
+
+            // 4. Blit the framebuffer
+            GL.BlitFramebuffer(
+                0, 0, _width, _height, // Source rectangle
+                0, 0, ClientSize.X, ClientSize.Y, // Destination rectangle
+                ClearBufferMask.ColorBufferBit,
+                BlitFramebufferFilter.Nearest
+            );
+
+            // 5. Unbind framebuffers
+            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, 0);
+            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
 
             SwapBuffers();
 
@@ -67,7 +111,6 @@ namespace Graveyard_Escape_Game
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             base.OnUpdateFrame(e);
-            // ...update logic...
             HandleInput((float)e.Time);
             _world.Update((float)e.Time * _timeScale);
         }
@@ -130,11 +173,6 @@ namespace Graveyard_Escape_Game
         {
             base.OnResize(e);
             GL.Viewport(0, 0, e.Width, e.Height);
-
-            // Update the projection matrix
-            GL.MatrixMode(MatrixMode.Projection);
-            GL.LoadIdentity();
-            GL.Ortho(0.0, e.Width, 0.0, e.Height, -1.0, 1.0);
         }
 
         private void PrintGraphicsInfo()
