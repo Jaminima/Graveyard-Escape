@@ -1,11 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Graveyard_Escape_Game.Types;
-using OpenTK.Graphics.OpenGL;
-using System.Runtime.InteropServices;
 
 namespace Graveyard_Escape_Game.Engine
 {
@@ -15,80 +11,33 @@ namespace Graveyard_Escape_Game.Engine
         public const int SceneHeight = 1080;
         public const int SceneTotalElements = SceneWidth * SceneHeight;
         
-        // GPU buffers
-        private int[] _bufferHandles;
         private int _currentBufferIndex = 0;
         
-        // Compute shaders
-        private ComputeShader _advectionShader;
-        private ComputeShader _pressureShader;
-        private ComputeShader _momentumShader;
-        
-        // CPU data for compatibility
+        // CPU data
         public Tile[] DoubleTileBuffer { get; private set; }
         public int BufferIndex => _currentBufferIndex;
         
         private readonly ThreadLocal<Random> _random = new ThreadLocal<Random>(() => new Random(Guid.NewGuid().GetHashCode()));
         private bool _disposed = false;
-        private bool _useGPU = true;
 
         public World()
         {
-            try
-            {
-                InitializeGPUBuffers();
-                LoadComputeShaders();
-                Console.WriteLine("GPU fluid simulation initialized successfully");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed to initialize GPU simulation, falling back to CPU: {ex.Message}");
-                _useGPU = false;
-            }
-            
             InitializeSimulationData();
-        }
-
-        private void InitializeGPUBuffers()
-        {
-            // Check if compute shaders are supported
-            GL.GetInteger(GetPName.MaxComputeWorkGroupCount, out int maxWorkGroups);
-            if (maxWorkGroups == 0)
-            {
-                throw new NotSupportedException("Compute shaders are not supported on this hardware");
-            }
-            
-            // Create two buffer objects for double buffering
-            _bufferHandles = new int[2];
-            GL.GenBuffers(2, _bufferHandles);
-            
-            int bufferSize = SceneTotalElements * Marshal.SizeOf<GpuTile>();
-            
-            for (int i = 0; i < 2; i++)
-            {
-                GL.BindBuffer(BufferTarget.ShaderStorageBuffer, _bufferHandles[i]);
-                GL.BufferData(BufferTarget.ShaderStorageBuffer, bufferSize, IntPtr.Zero, BufferUsageHint.DynamicDraw);
-            }
-            
-            GL.BindBuffer(BufferTarget.ShaderStorageBuffer, 0);
-        }
-
-        private void LoadComputeShaders()
-        {
-            _advectionShader = new ComputeShader("GLSL/fluid_advection.compute.glsl");
-            _pressureShader = new ComputeShader("GLSL/fluid_pressure.compute.glsl");
-            _momentumShader = new ComputeShader("GLSL/fluid_momentum.compute.glsl");
         }
 
         private void InitializeSimulationData()
         {
-            // Create initial data on CPU
-            GpuTile[] initialData = new GpuTile[SceneTotalElements];
+            // Create initial data
+            Tile[] initialData = new Tile[SceneTotalElements];
             
             // Initialize with base pressure and zero momentum
             for (int i = 0; i < SceneTotalElements; i++)
             {
-                initialData[i] = new GpuTile(0.0f, 0.0f, 0.2f);
+                initialData[i] = new Tile
+                {
+                    Pressure = 0.2f,
+                    FlowMomentum = Vector2.Zero
+                };
             }
 
             // Create random splodges of pressure and momentum
@@ -125,8 +74,7 @@ namespace Graveyard_Escape_Game.Engine
                             falloff *= falloff;
 
                             initialData[index].Pressure += maxPressure * falloff;
-                            Vector2 momentum = initialData[index].FlowMomentum + flowMomentum * falloff;
-                            initialData[index].FlowMomentum = momentum;
+                            initialData[index].FlowMomentum += flowMomentum * falloff;
                         }
                     }
                 }
@@ -138,19 +86,7 @@ namespace Graveyard_Escape_Game.Engine
                 initialData[i].Pressure = Math.Max(0, Math.Min(1.0f, initialData[i].Pressure));
             }
 
-            if (_useGPU)
-            {
-                // Upload initial data to both GPU buffers
-                int bufferSize = SceneTotalElements * Marshal.SizeOf<GpuTile>();
-                for (int i = 0; i < 2; i++)
-                {
-                    GL.BindBuffer(BufferTarget.ShaderStorageBuffer, _bufferHandles[i]);
-                    GL.BufferSubData(BufferTarget.ShaderStorageBuffer, IntPtr.Zero, bufferSize, initialData);
-                }
-                GL.BindBuffer(BufferTarget.ShaderStorageBuffer, 0);
-            }
-
-            // Initialize CPU buffer for compatibility
+            // Initialize CPU buffer
             DoubleTileBuffer = new Tile[2 * SceneTotalElements];
             for (int i = 0; i < SceneTotalElements; i++)
             {
@@ -161,81 +97,7 @@ namespace Graveyard_Escape_Game.Engine
 
         public void Update(float dtime)
         {
-            if (_useGPU)
-            {
-                UpdateGPU(dtime);
-            }
-            else
-            {
-                UpdateCPU(dtime);
-            }
-        }
-
-        private void UpdateGPU(float dtime)
-        {
-            int inputBufferIndex = _currentBufferIndex;
-            int outputBufferIndex = (_currentBufferIndex + 1) % 2;
-            
-            // Set up buffer bindings
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, _bufferHandles[inputBufferIndex]);
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, _bufferHandles[outputBufferIndex]);
-            
-            // Calculate work group dimensions
-            int workGroupsX = (SceneWidth + 15) / 16;  // Round up to nearest multiple of 16
-            int workGroupsY = (SceneHeight + 15) / 16;
-            
-            // Step 1: Advection
-            _advectionShader.Use();
-            _advectionShader.SetUniform("sceneWidth", SceneWidth);
-            _advectionShader.SetUniform("sceneHeight", SceneHeight);
-            _advectionShader.SetUniform("deltaTime", dtime);
-            _advectionShader.Dispatch(workGroupsX, workGroupsY, 1);
-            
-            // Wait for advection to complete
-            GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
-            
-            // Swap buffers for next step
-            int tempBufferIndex = inputBufferIndex;
-            inputBufferIndex = outputBufferIndex;
-            outputBufferIndex = tempBufferIndex;
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, _bufferHandles[inputBufferIndex]);
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, _bufferHandles[outputBufferIndex]);
-            
-            // Step 2: Pressure projection
-            _pressureShader.Use();
-            _pressureShader.SetUniform("sceneWidth", SceneWidth);
-            _pressureShader.SetUniform("sceneHeight", SceneHeight);
-            _pressureShader.Dispatch(workGroupsX, workGroupsY, 1);
-            
-            // Wait for pressure update to complete
-            GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
-            
-            // Swap buffers for next step
-            tempBufferIndex = inputBufferIndex;
-            inputBufferIndex = outputBufferIndex;
-            outputBufferIndex = tempBufferIndex;
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, _bufferHandles[inputBufferIndex]);
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, _bufferHandles[outputBufferIndex]);
-            
-            // Step 3: Momentum update
-            _momentumShader.Use();
-            _momentumShader.SetUniform("sceneWidth", SceneWidth);
-            _momentumShader.SetUniform("sceneHeight", SceneHeight);
-            _momentumShader.SetUniform("deltaTime", dtime);
-            _momentumShader.Dispatch(workGroupsX, workGroupsY, 1);
-            
-            // Wait for momentum update to complete
-            GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
-            
-            // Update current buffer index
-            _currentBufferIndex = outputBufferIndex;
-            
-            // Update CPU buffer for compatibility with renderer
-            UpdateCPUBufferFromGPU();
-            
-            // Unbind buffers
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, 0);
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, 0);
+            UpdateCPU(dtime);
         }
 
         private void UpdateCPU(float dtime)
@@ -368,31 +230,6 @@ namespace Graveyard_Escape_Game.Engine
             });
         }
 
-        private void UpdateCPUBufferFromGPU()
-        {
-            // Download current GPU buffer to CPU for rendering compatibility
-            GL.BindBuffer(BufferTarget.ShaderStorageBuffer, _bufferHandles[_currentBufferIndex]);
-            IntPtr ptr = GL.MapBuffer(BufferTarget.ShaderStorageBuffer, BufferAccess.ReadOnly);
-            
-            if (ptr != IntPtr.Zero)
-            {
-                unsafe
-                {
-                    GpuTile* gpuData = (GpuTile*)ptr.ToPointer();
-                    int offset = _currentBufferIndex * SceneTotalElements;
-                    
-                    for (int i = 0; i < SceneTotalElements; i++)
-                    {
-                        DoubleTileBuffer[offset + i] = gpuData[i];
-                    }
-                }
-                
-                GL.UnmapBuffer(BufferTarget.ShaderStorageBuffer);
-            }
-            
-            GL.BindBuffer(BufferTarget.ShaderStorageBuffer, 0);
-        }
-
         private float Lerp(float a, float b, float t) => a * (1 - t) + b * t;
         private Vector2 Lerp(Vector2 a, Vector2 b, float t) => a * (1 - t) + b * t;
 
@@ -405,15 +242,7 @@ namespace Graveyard_Escape_Game.Engine
         {
             if (!_disposed)
             {
-                _advectionShader?.Dispose();
-                _pressureShader?.Dispose();
-                _momentumShader?.Dispose();
-                
-                if (_bufferHandles != null)
-                {
-                    GL.DeleteBuffers(2, _bufferHandles);
-                }
-                
+                _random?.Dispose();
                 _disposed = true;
             }
         }
