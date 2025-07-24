@@ -153,7 +153,7 @@ namespace Graveyard_Escape_Game
             }
 
             //MOVEMENT
-            float step = 0.5f * deltaTime / _zoom;
+            float step = 100.0f * deltaTime / _zoom;
 
             if (keyboardState.IsKeyDown(Keys.W))
             {
@@ -173,7 +173,7 @@ namespace Graveyard_Escape_Game
             }
 
             // ZOOM
-            float zoomStep = 0.25f * deltaTime;
+            float zoomStep = 1.0f * deltaTime;
 
             if (keyboardState.IsKeyDown(Keys.Q))
             {
