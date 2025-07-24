@@ -185,6 +185,28 @@ namespace Graveyard_Escape_Game
             }
 
             _zoom = Math.Max(0.01f, _zoom);
+
+            // SPAWN PRESSURE BUBBLE ON LEFT CLICK
+            if (mouseState.IsButtonDown(MouseButton.Left))
+            {
+                // Get mouse position in window coordinates
+                var mousePos = mouseState.Position;
+                float viewportWidth = ClientSize.X;
+                float viewportHeight = ClientSize.Y;
+
+                // Convert mouse position to normalized viewport coordinates (0..1)
+                float normX = mousePos.X / viewportWidth;
+                float normY = (viewportHeight - mousePos.Y) / viewportHeight;
+
+                // Map normalized coordinates to world coordinates
+                float worldX = _cameraPosition.X + (normX * World.SceneWidth) / _zoom;
+                float worldY = _cameraPosition.Y + (normY * World.SceneHeight) / _zoom;
+
+                // Clamp to world bounds
+                int bubbleX = (int)Math.Clamp(worldX, 0, World.SceneWidth - 1);
+                int bubbleY = (int)Math.Clamp(worldY, 0, World.SceneHeight - 1);
+                _world.SpawnPressureBubble(bubbleX, bubbleY, 50, 1.0f);
+            }
         }
 
         protected override void OnResize(ResizeEventArgs e)

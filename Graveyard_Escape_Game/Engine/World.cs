@@ -246,5 +246,36 @@ namespace Graveyard_Escape_Game.Engine
                 _disposed = true;
             }
         }
+
+        public void SpawnPressureBubble(int centerX, int centerY, float radius = 50, float pressure = 1.0f)
+        {
+            // Spawn bubble in both buffers for immediate effect
+            for (int buffer = 0; buffer < 2; buffer++)
+            {
+                int offset = buffer * SceneTotalElements;
+                int startX = Math.Max(0, (int)(centerX - radius));
+                int endX = Math.Min(SceneWidth, (int)(centerX + radius));
+                int startY = Math.Max(0, (int)(centerY - radius));
+                int endY = Math.Min(SceneHeight, (int)(centerY + radius));
+                for (int y = startY; y < endY; y++)
+                {
+                    for (int x = startX; x < endX; x++)
+                    {
+                        float dx = x - centerX;
+                        float dy = y - centerY;
+                        float distanceSq = dx * dx + dy * dy;
+                        if (distanceSq < radius * radius)
+                        {
+                            int index = y * SceneWidth + x + offset;
+                            float distance = (float)Math.Sqrt(distanceSq);
+                            float falloff = 1.0f - (distance / radius);
+                            falloff *= falloff;
+                            DoubleTileBuffer[index].Pressure += pressure * falloff;
+                            DoubleTileBuffer[index].Pressure = Math.Min(1.0f, DoubleTileBuffer[index].Pressure);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
