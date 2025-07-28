@@ -36,8 +36,21 @@ namespace Graveyard_Escape_Game.Engine
                 initialData[i] = new Tile
                 {
                     Pressure = 0.2f,
-                    FlowMomentum = Vector2.Zero
+                    FlowMomentum = Vector2.Zero,
+                    IsWall = false
                 };
+            }
+
+            // Add a vertical wall spanning half the middle of the scene
+            int wallX = SceneWidth / 2; // Middle X
+            int wallStartY = SceneHeight / 4; // Start at 1/4th height
+            int wallEndY = 3 * SceneHeight / 4; // End at 3/4th height
+            for (int y = wallStartY; y < wallEndY; y++)
+            {
+                int index = y * SceneWidth + wallX;
+                initialData[index].Pressure = 0.0f; // Pressure ignored for wall
+                initialData[index].FlowMomentum = Vector2.Zero; // No flow through wall
+                initialData[index].IsWall = true;
             }
 
             // Create random splodges of pressure and momentum
@@ -69,12 +82,15 @@ namespace Graveyard_Escape_Game.Engine
                         if (distanceSq < radius * radius)
                         {
                             int index = y * SceneWidth + x;
-                            float distance = (float)Math.Sqrt(distanceSq);
-                            float falloff = 1.0f - (distance / radius);
-                            falloff *= falloff;
+                            if (!initialData[index].IsWall) // Don't modify wall tiles
+                            {
+                                float distance = (float)Math.Sqrt(distanceSq);
+                                float falloff = 1.0f - (distance / radius);
+                                falloff *= falloff;
 
-                            initialData[index].Pressure += maxPressure * falloff;
-                            initialData[index].FlowMomentum += flowMomentum * falloff;
+                                initialData[index].Pressure += maxPressure * falloff;
+                                initialData[index].FlowMomentum += flowMomentum * falloff;
+                            }
                         }
                     }
                 }
@@ -83,7 +99,8 @@ namespace Graveyard_Escape_Game.Engine
             // Clamp initial pressure
             for (int i = 0; i < SceneTotalElements; i++)
             {
-                initialData[i].Pressure = Math.Max(0, Math.Min(1.0f, initialData[i].Pressure));
+                if (!initialData[i].IsWall)
+                    initialData[i].Pressure = Math.Max(0, Math.Min(1.0f, initialData[i].Pressure));
             }
 
             // Initialize CPU buffer
@@ -93,6 +110,13 @@ namespace Graveyard_Escape_Game.Engine
                 DoubleTileBuffer[i] = initialData[i];
                 DoubleTileBuffer[i + SceneTotalElements] = initialData[i];
             }
+        }
+
+        // Helper to check if a tile is a wall
+        private bool IsWall(int x, int y)
+        {
+            int index = y * SceneWidth + x;
+            return DoubleTileBuffer[index].IsWall;
         }
 
         public void Update(float dtime)
@@ -116,6 +140,14 @@ namespace Graveyard_Escape_Game.Engine
                 int myIndex = i + lastOffset;
                 int currentCellIndex = i + currentOffset;
 
+                if (DoubleTileBuffer[myIndex].IsWall)
+                {
+                    DoubleTileBuffer[currentCellIndex].Pressure = DoubleTileBuffer[myIndex].Pressure;
+                    DoubleTileBuffer[currentCellIndex].FlowMomentum = Vector2.Zero;
+                    DoubleTileBuffer[currentCellIndex].IsWall = true;
+                    return;
+                }
+
                 var lastTile = DoubleTileBuffer[myIndex];
 
                 // 1. Advection: Move pressure and momentum along the flow
@@ -135,21 +167,22 @@ namespace Graveyard_Escape_Game.Engine
                 float sy = sourceY - y0;
 
                 // Bilinear interpolation for advected pressure and momentum
-                float p00 = DoubleTileBuffer[lastOffset + y0 * SceneWidth + x0].Pressure;
-                float p10 = DoubleTileBuffer[lastOffset + y0 * SceneWidth + x1].Pressure;
-                float p01 = DoubleTileBuffer[lastOffset + y1 * SceneWidth + x0].Pressure;
-                float p11 = DoubleTileBuffer[lastOffset + y1 * SceneWidth + x1].Pressure;
+                float p00 = IsWall(x0, y0) ? lastTile.Pressure : DoubleTileBuffer[lastOffset + y0 * SceneWidth + x0].Pressure;
+                float p10 = IsWall(x1, y0) ? lastTile.Pressure : DoubleTileBuffer[lastOffset + y0 * SceneWidth + x1].Pressure;
+                float p01 = IsWall(x0, y1) ? lastTile.Pressure : DoubleTileBuffer[lastOffset + y1 * SceneWidth + x0].Pressure;
+                float p11 = IsWall(x1, y1) ? lastTile.Pressure : DoubleTileBuffer[lastOffset + y1 * SceneWidth + x1].Pressure;
                 float advectedPressure = Lerp(Lerp(p00, p10, sx), Lerp(p01, p11, sx), sy);
 
-                Vector2 m00 = DoubleTileBuffer[lastOffset + y0 * SceneWidth + x0].FlowMomentum;
-                Vector2 m10 = DoubleTileBuffer[lastOffset + y0 * SceneWidth + x1].FlowMomentum;
-                Vector2 m01 = DoubleTileBuffer[lastOffset + y1 * SceneWidth + x0].FlowMomentum;
-                Vector2 m11 = DoubleTileBuffer[lastOffset + y1 * SceneWidth + x1].FlowMomentum;
+                Vector2 m00 = IsWall(x0, y0) ? Vector2.Zero : DoubleTileBuffer[lastOffset + y0 * SceneWidth + x0].FlowMomentum;
+                Vector2 m10 = IsWall(x1, y0) ? Vector2.Zero : DoubleTileBuffer[lastOffset + y0 * SceneWidth + x1].FlowMomentum;
+                Vector2 m01 = IsWall(x0, y1) ? Vector2.Zero : DoubleTileBuffer[lastOffset + y1 * SceneWidth + x0].FlowMomentum;
+                Vector2 m11 = IsWall(x1, y1) ? Vector2.Zero : DoubleTileBuffer[lastOffset + y1 * SceneWidth + x1].FlowMomentum;
                 Vector2 advectedMomentum = Lerp(Lerp(m00, m10, sx), Lerp(m01, m11, sx), sy);
 
                 // Store advected values temporarily in the current buffer
                 DoubleTileBuffer[currentCellIndex].Pressure = advectedPressure;
                 DoubleTileBuffer[currentCellIndex].FlowMomentum = advectedMomentum;
+                DoubleTileBuffer[currentCellIndex].IsWall = false;
             });
 
             // Pressure-projection to enforce incompressibility
@@ -159,39 +192,32 @@ namespace Graveyard_Escape_Game.Engine
                 int y = i / SceneWidth;
                 int myIndex = i + currentOffset; // Use current buffer for this step
 
+                if (DoubleTileBuffer[myIndex].IsWall)
+                {
+                    DoubleTileBuffer[myIndex].Pressure = DoubleTileBuffer[myIndex].Pressure;
+                    DoubleTileBuffer[myIndex].FlowMomentum = Vector2.Zero;
+                    DoubleTileBuffer[myIndex].IsWall = true;
+                    return;
+                }
+
                 // 2. Calculate Divergence from the advected momentum field
                 float m_right, m_left, m_down, m_up;
 
                 // Right neighbor
-                if (x < SceneWidth - 1)
-                    m_right = DoubleTileBuffer[myIndex + 1].FlowMomentum.X;
-                else // Right boundary (wall)
-                    m_right = 0.0f; // No-slip
-
+                m_right = (x < SceneWidth - 1 && !IsWall(x + 1, y)) ? DoubleTileBuffer[myIndex + 1].FlowMomentum.X : DoubleTileBuffer[myIndex].FlowMomentum.X;
                 // Left neighbor
-                if (x > 0)
-                    m_left = DoubleTileBuffer[myIndex - 1].FlowMomentum.X;
-                else // Left boundary (wall)
-                    m_left = 0.0f; // No-slip
-
+                m_left = (x > 0 && !IsWall(x - 1, y)) ? DoubleTileBuffer[myIndex - 1].FlowMomentum.X : DoubleTileBuffer[myIndex].FlowMomentum.X;
                 // Bottom neighbor
-                if (y < SceneHeight - 1)
-                    m_down = DoubleTileBuffer[myIndex + SceneWidth].FlowMomentum.Y;
-                else // Bottom boundary (wall)
-                    m_down = 0.0f; // No-slip
-
+                m_down = (y < SceneHeight - 1 && !IsWall(x, y + 1)) ? DoubleTileBuffer[myIndex + SceneWidth].FlowMomentum.Y : DoubleTileBuffer[myIndex].FlowMomentum.Y;
                 // Top neighbor
-                if (y > 0)
-                    m_up = DoubleTileBuffer[myIndex - SceneWidth].FlowMomentum.Y;
-                else // Top boundary (wall)
-                    m_up = 0.0f; // No-slip
+                m_up = (y > 0 && !IsWall(x, y - 1)) ? DoubleTileBuffer[myIndex - SceneWidth].FlowMomentum.Y : DoubleTileBuffer[myIndex].FlowMomentum.Y;
 
                 float divergence = m_right - m_left + m_down - m_up;
 
                 // 3. Update Pressure based on divergence
-                // This is a simplification. A full projection would solve a Poisson equation.
-                float pressureCorrection = divergence * 0.1f; // Correction factor
+                float pressureCorrection = divergence * 0.1f;
                 DoubleTileBuffer[myIndex].Pressure = Math.Max(0, DoubleTileBuffer[myIndex].Pressure - pressureCorrection);
+                DoubleTileBuffer[myIndex].IsWall = false;
             });
 
             // Update momentum from pressure gradient
@@ -201,11 +227,19 @@ namespace Graveyard_Escape_Game.Engine
                 int y = i / SceneWidth;
                 int myIndex = i + currentOffset;
 
+                if (DoubleTileBuffer[myIndex].IsWall)
+                {
+                    DoubleTileBuffer[myIndex].Pressure = DoubleTileBuffer[myIndex].Pressure;
+                    DoubleTileBuffer[myIndex].FlowMomentum = Vector2.Zero;
+                    DoubleTileBuffer[myIndex].IsWall = true;
+                    return;
+                }
+
                 // 4. Update FlowMomentum based on the new pressure gradient
-                float p_right = (x < SceneWidth - 1) ? DoubleTileBuffer[myIndex + 1].Pressure : DoubleTileBuffer[myIndex].Pressure;
-                float p_left = (x > 0) ? DoubleTileBuffer[myIndex - 1].Pressure : DoubleTileBuffer[myIndex].Pressure;
-                float p_down = (y < SceneHeight - 1) ? DoubleTileBuffer[myIndex + SceneWidth].Pressure : DoubleTileBuffer[myIndex].Pressure;
-                float p_up = (y > 0) ? DoubleTileBuffer[myIndex - SceneWidth].Pressure : DoubleTileBuffer[myIndex].Pressure;
+                float p_right = (x < SceneWidth - 1 && !IsWall(x + 1, y)) ? DoubleTileBuffer[myIndex + 1].Pressure : DoubleTileBuffer[myIndex].Pressure;
+                float p_left = (x > 0 && !IsWall(x - 1, y)) ? DoubleTileBuffer[myIndex - 1].Pressure : DoubleTileBuffer[myIndex].Pressure;
+                float p_down = (y < SceneHeight - 1 && !IsWall(x, y + 1)) ? DoubleTileBuffer[myIndex + SceneWidth].Pressure : DoubleTileBuffer[myIndex].Pressure;
+                float p_up = (y > 0 && !IsWall(x, y - 1)) ? DoubleTileBuffer[myIndex - SceneWidth].Pressure : DoubleTileBuffer[myIndex].Pressure;
 
                 Vector2 gradient = new Vector2(p_right - p_left, p_down - p_up);
                 
@@ -222,12 +256,24 @@ namespace Graveyard_Escape_Game.Engine
 
                 if (y == 0 || y == SceneHeight - 1)
                 {
-                    // No-slip on top and bottom
                     newFlowMomentum.Y = 0;
                 }
 
                 DoubleTileBuffer[myIndex].FlowMomentum = newFlowMomentum;
+                DoubleTileBuffer[myIndex].IsWall = false;
             });
+
+            // Enforce wall after simulation step
+            int wallX = SceneWidth / 2;
+            int wallStartY = SceneHeight / 4;
+            int wallEndY = 3 * SceneHeight / 4;
+            for (int y = wallStartY; y < wallEndY; y++)
+            {
+                int index = y * SceneWidth + wallX + currentOffset;
+                DoubleTileBuffer[index].Pressure = DoubleTileBuffer[index].Pressure;
+                DoubleTileBuffer[index].FlowMomentum = Vector2.Zero;
+                DoubleTileBuffer[index].IsWall = true;
+            }
         }
 
         private float Lerp(float a, float b, float t) => a * (1 - t) + b * t;

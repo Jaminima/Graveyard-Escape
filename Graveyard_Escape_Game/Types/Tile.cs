@@ -13,5 +13,6 @@ namespace Graveyard_Escape_Game.Types
     {
         public float Pressure { get; set; }
         public Vector2 FlowMomentum { get; set; }
+        public bool IsWall { get; set; } // True if this tile is a wall
     }
 }
